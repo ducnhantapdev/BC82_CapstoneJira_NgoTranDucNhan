@@ -1,9 +1,9 @@
-import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import { Avatar, AvatarGroup, Tooltip } from "@mui/material";
 import { useEffect, useState } from "react";
 import { getProjectsAPI, type ProjectList } from "../../apis/projects";
+import CreateProjectModal from "../AppBar/menu/create-project-modal";
 
 interface memberProps {
   userId: number;
@@ -115,9 +115,8 @@ export default function ListProjects() {
       <div>
         <div id="list-header" className="flex justify-between items-center ">
           <h1 className="font-bold text-2xl">Project</h1>
-          <Button variant="contained" sx={{ color: "white" }}>
-            Create Project
-          </Button>
+
+          <CreateProjectModal />
         </div>
         <div id="list-content" className="mt-10">
           <Box sx={{ height: "100%", width: "100%" }}>

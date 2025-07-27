@@ -5,6 +5,8 @@ import Login from "../components/form-login";
 
 import Home from "../pages/home";
 import PrivateRoute from "../components/PrivateRoute";
+import CreateProject from "../pages/create-project";
+import HomeLayout from "../components/layout/home-layout";
 
 const useRouterElements = () => {
   const elements = useRoutes([
@@ -19,6 +21,14 @@ const useRouterElements = () => {
     {
       path: PATH.LOGIN,
       element: <Login />,
+    },
+    {
+      path: PATH.CREATE_PROJECT,
+      element: (
+        <HomeLayout>
+          <CreateProject />
+        </HomeLayout>
+      ),
     },
 
     { path: PATH.NOT_FOUND, element: <div>404 Not Found</div> },
