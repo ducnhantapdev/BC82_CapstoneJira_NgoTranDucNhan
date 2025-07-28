@@ -7,6 +7,7 @@ import Home from "../pages/home";
 import PrivateRoute from "../components/PrivateRoute";
 import CreateProject from "../pages/create-project";
 import HomeLayout from "../components/layout/home-layout";
+import UpdateProject from "../pages/update-project";
 
 const useRouterElements = () => {
   const elements = useRoutes([
@@ -27,6 +28,15 @@ const useRouterElements = () => {
       element: (
         <HomeLayout>
           <CreateProject />
+        </HomeLayout>
+      ),
+    },
+
+    {
+      path: `${PATH.UPDATE_PROJECT}/:id`,
+      element: (
+        <HomeLayout>
+          <UpdateProject />
         </HomeLayout>
       ),
     },

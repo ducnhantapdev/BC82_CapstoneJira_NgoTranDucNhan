@@ -2,8 +2,15 @@ import Box from "@mui/material/Box";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import { Avatar, AvatarGroup, Tooltip } from "@mui/material";
 import { useEffect, useState } from "react";
-import { getProjectsAPI, type ProjectList } from "../../apis/projects";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchProjects } from "../../redux/projectSlice";
+import type { RootState, AppDispatch } from "../../redux/store";
 import CreateProjectModal from "../AppBar/menu/create-project-modal";
+import { type ProjectList } from "../../apis/projects";
+import ActionMenu from "./action";
+import { useNavigate } from "react-router-dom";
+
+import DeleteDialog from "./action/delete";
 
 interface memberProps {
   userId: number;
@@ -12,20 +19,25 @@ interface memberProps {
 }
 
 export default function ListProjects() {
-  const [projects, setListProjects] = useState<ProjectList[]>([]);
+  const [deleteId, setDeleteId] = useState<number>(0);
+  const [openDelete, setOpenDelete] = useState(false);
+
+  const dispatch = useDispatch<AppDispatch>();
+  const { list: projects } = useSelector((state: RootState) => state.projects);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fecthBanner = async () => {
-      try {
-        const getProjects = await getProjectsAPI();
-        console.log("projects", getProjects);
-        setListProjects(getProjects);
-      } catch (error) {
-        console.error("Lỗi khi lấy danh sách projects:", error);
-      }
-    };
-    fecthBanner();
-  }, []);
+    dispatch(fetchProjects());
+  }, [dispatch]);
+
+  const onUpdate = (id: number) => {
+    navigate(`/update-project/${id}`);
+  };
+
+  const onDelete = (id: number) => {
+    setDeleteId(id);
+    setOpenDelete(true);
+  };
 
   const columns: GridColDef<ProjectList>[] = [
     { field: "id", headerName: "ID", width: 90 },
@@ -106,6 +118,17 @@ export default function ListProjects() {
         );
       },
     },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 100,
+      renderCell: (params) => (
+        <ActionMenu
+          onUpdate={() => onUpdate(params.row.id)}
+          onDelete={() => onDelete(params.row.id)}
+        />
+      ),
+    },
   ];
 
   console.log("Current projects state:", projects);
@@ -137,6 +160,11 @@ export default function ListProjects() {
           </Box>
         </div>
       </div>
+      <DeleteDialog
+        open={openDelete}
+        onClose={() => setOpenDelete(false)}
+        projectId={deleteId}
+      />
     </>
   );
 }

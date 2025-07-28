@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -11,17 +11,82 @@ import {
   InputLabel,
   Paper,
   TextareaAutosize,
+  FormHelperText,
 } from "@mui/material";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import {
+  createProject,
+  getCatogories,
+  type ProjectCategory,
+} from "../../apis/projects";
+import { toast, ToastContainer } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+
+const schema = yup.object({
+  projectName: yup.string().required("Vui lòng nhập tên project"),
+  category: yup.number().required("Vui lòng chọn danh mục"),
+  description: yup.string().required("Vui lòng nhập mô tả"),
+});
+
+type FormValues = {
+  projectName: string;
+  category: number;
+  description: string;
+};
 
 export default function CreateProject() {
-  const [category, setCategory] = React.useState("");
+  const [listCategories, setListCategories] = useState<ProjectCategory[]>([]);
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      projectName: "",
+      category: 1,
+      description: "",
+    },
+  });
+  const userString = localStorage.getItem("user");
+  const user = userString ? JSON.parse(userString) : null;
 
-  const handleCategoryChange = (event: any) => {
-    setCategory(event.target.value);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    getCatogoriess();
+  }, []);
+
+  const getCatogoriess = async () => {
+    try {
+      const listCategory = await getCatogories();
+      setListCategories(
+        Array.isArray(listCategory) ? listCategory : listCategory.category
+      );
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
   };
 
-  const handleCreate = () => {
-    alert("Project created!");
+  const onSubmit = async (data: FormValues) => {
+    try {
+      await createProject({
+        projectName: data.projectName,
+        description: data.description,
+        categoryId: data.category,
+        creator: user?.id,
+      });
+      toast.success("Tạo project thành công!");
+
+      setTimeout(() => {
+        navigate("/");
+      }, 3000);
+    } catch (error) {
+      toast.error("Tạo project thất bại!");
+      console.error(error);
+    }
   };
 
   return (
@@ -32,57 +97,92 @@ export default function CreateProject() {
         </Typography>
 
         <Box mt={4} component={Paper} p={4}>
-          <Box mb={3}>
-            <TextField
-              label="Project name"
-              fullWidth
-              required
-              variant="outlined"
-            />
-          </Box>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Box mb={3}>
+              <Controller
+                name="projectName"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Project name"
+                    fullWidth
+                    required
+                    variant="outlined"
+                    error={!!errors.projectName}
+                    helperText={errors.projectName?.message}
+                  />
+                )}
+              />
+            </Box>
 
-          <Box mb={3}>
-            <FormControl fullWidth required>
-              <InputLabel>Project category</InputLabel>
-              <Select
-                value={category}
-                label="Project category"
-                onChange={handleCategoryChange}
-              >
-                <MenuItem value="design">Design</MenuItem>
-                <MenuItem value="development">Development</MenuItem>
-                <MenuItem value="marketing">Marketing</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
+            <Box mb={3}>
+              <FormControl fullWidth required error={!!errors.category}>
+                <InputLabel>Project category</InputLabel>
+                <Controller
+                  name="category"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      label="Project category"
+                      value={field.value || ""}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                    >
+                      {listCategories.map((cat) => (
+                        <MenuItem key={cat.id} value={cat.id}>
+                          {cat.projectCategoryName}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                />
+                <FormHelperText>{errors.category?.message}</FormHelperText>
+              </FormControl>
+            </Box>
 
-          <Box mb={3}>
-            <Typography variant="subtitle1" gutterBottom>
-              Descriptions
-            </Typography>
-            <TextareaAutosize
-              maxRows={4}
-              aria-label="maximum height"
-              placeholder="Maximum 4 rows"
-              defaultValue=""
-              style={{
-                width: "100%",
-                height: "100px",
-                padding: "10px",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-              }}
-            />
-          </Box>
+            <Box mb={3}>
+              <Typography variant="subtitle1" gutterBottom>
+                Descriptions
+              </Typography>
+              <Controller
+                name="description"
+                control={control}
+                render={({ field }) => (
+                  <TextareaAutosize
+                    {...field}
+                    maxRows={4}
+                    aria-label="maximum height"
+                    placeholder="Maximum 4 rows"
+                    style={{
+                      width: "100%",
+                      height: "100px",
+                      padding: "10px",
+                      borderRadius: "4px",
+                      border: "1px solid #ccc",
+                    }}
+                  />
+                )}
+              />
+              {errors.description && (
+                <FormHelperText error>
+                  {errors.description.message}
+                </FormHelperText>
+              )}
+            </Box>
 
-          <Box display="flex" justifyContent="flex-end" gap={2}>
-            <Button variant="outlined">Cancel</Button>
-            <Button variant="contained" onClick={handleCreate}>
-              Create
-            </Button>
-          </Box>
+            <Box display="flex" justifyContent="flex-end" gap={2}>
+              <Button variant="outlined" type="button">
+                Cancel
+              </Button>
+              <Button variant="contained" type="submit">
+                Create
+              </Button>
+            </Box>
+          </form>
         </Box>
       </Box>
+      <ToastContainer />
     </Container>
   );
 }
