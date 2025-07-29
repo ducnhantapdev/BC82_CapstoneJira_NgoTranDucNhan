@@ -56,6 +56,8 @@ export default function CreateProject() {
   const userString = localStorage.getItem("user");
   const user = userString ? JSON.parse(userString) : null;
 
+  const [projectId, setProjectId] = useState<number>(0);
+
   useEffect(() => {
     getCatogoriess();
   }, []);
@@ -73,13 +75,16 @@ export default function CreateProject() {
 
   const onSubmit = async (data: FormValues) => {
     try {
-      await createProject({
+      const res = await createProject({
         projectName: data.projectName,
         description: data.description,
         categoryId: data.category,
         creator: user?.id,
       });
-      setIsAddMemberOpen(true);
+      if (res?.id) {
+        setProjectId(res.id);
+        setIsAddMemberOpen(true);
+      }
     } catch (error) {
       toast.error("Tạo project thất bại!");
       console.error(error);
@@ -182,6 +187,7 @@ export default function CreateProject() {
       <AddmemberModal
         open={isAddMemberOpen}
         onClose={() => setIsAddMemberOpen(false)}
+        projectId={projectId}
       />
       <ToastContainer />
     </Container>

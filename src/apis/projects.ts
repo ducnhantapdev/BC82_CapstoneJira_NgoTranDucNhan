@@ -32,6 +32,11 @@ export interface ProjectCategory {
   projectCategoryName: string;
 }
 
+export interface UserAsign {
+  userId: number;
+  projectId: number;
+}
+
 export const getProjectsAPI = async () => {
   try {
     const res = await fetcher.get<ApiResponse<ProjectList[]>>(
@@ -60,13 +65,7 @@ export const createProject = async (projectData: ProjectDetail) => {
 export const getProjectDetailById = async (id: number) => {
   try {
     const res = await fetcher.get<ApiResponse<ProjectList>>(
-      `Project/getProjectDetail?idProject=${id}`,
-      {
-        headers: {
-          TokenCybersoft:
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5Mb3AiOiJCb290Y2FtcCA4MiIsIkhldEhhblN0cmluZyI6IjE2LzExLzIwMjUiLCJIZXRIYW5UaW1lIjoiMTc2MzI1MTIwMDAwMCIsIm5iZiI6MTczNDMwNzIwMCwiZXhwIjoxNzYzNDI0MDAwfQ.AW3E6NCoEbvlvXPJj53HWqfHPdZa9NXeq3K-0GZPpUI",
-        },
-      }
+      `Project/getProjectDetail?idProject=${id}`
     );
     return res.data.content;
   } catch (error) {
@@ -96,6 +95,19 @@ export const deleteProject = async (id: number) => {
     return res.data.content;
   } catch (error) {
     console.error("Error deleting project:", error);
+    throw error;
+  }
+};
+
+export const assignUserProject = async (data: UserAsign) => {
+  try {
+    const res = await fetcher.post<ApiResponse<{ message: string }>>(
+      "Project/assignUserProject",
+      data
+    );
+    return res.data.content;
+  } catch (error) {
+    console.error("Error fetching project list:", error);
     throw error;
   }
 };
