@@ -5,7 +5,6 @@ import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import { toast, ToastContainer } from "react-toastify";
 import { deleteProject, getProjectsAPI } from "../../../../apis/projects";
-import { set } from "react-hook-form";
 
 interface DeleteDialogProps {
   open: boolean;

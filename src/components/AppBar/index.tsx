@@ -4,12 +4,21 @@ import ProjectsMenu from "./menu/project";
 import UsersMenu from "./menu/users";
 
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
+
 import AccoutMenu from "./menu/account-menu";
 import SettingMenu from "./menu/setting-icon";
 import { useNavigate } from "react-router-dom";
 
+import SearchBox from "./menu/search";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "../../redux/store";
+import { setSearchTerm } from "../../redux/projectSlice";
+
 export default function AppBar() {
+  const dispatch = useDispatch<AppDispatch>();
+  const searchText = useSelector(
+    (state: RootState) => state.projects.searchTerm
+  );
   const navigate = useNavigate();
   return (
     <Box
@@ -41,12 +50,9 @@ export default function AppBar() {
             <Button variant="outlined">Create Task</Button>
           </div>
           <div className="flex gap-2 items-center">
-            <TextField
-              id="outlined-basic"
-              label="Search..."
-              variant="outlined"
-              size="small"
-              className="border border-primary"
+            <SearchBox
+              value={searchText}
+              onChange={(value: string) => dispatch(setSearchTerm(value))}
             />
             <SettingMenu />
             <AccoutMenu />

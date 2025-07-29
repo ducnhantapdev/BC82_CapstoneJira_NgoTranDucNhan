@@ -22,6 +22,14 @@ export default function ListProjects() {
   const [deleteId, setDeleteId] = useState<number>(0);
   const [openDelete, setOpenDelete] = useState(false);
 
+  const { list: allProjects, searchTerm } = useSelector(
+    (state: RootState) => state.projects
+  );
+
+  const filteredProjects = allProjects.filter((project) =>
+    project.projectName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const dispatch = useDispatch<AppDispatch>();
   const { list: projects } = useSelector((state: RootState) => state.projects);
   const navigate = useNavigate();
@@ -138,13 +146,12 @@ export default function ListProjects() {
       <div>
         <div id="list-header" className="flex justify-between items-center ">
           <h1 className="font-bold text-2xl">Project</h1>
-
           <CreateProjectModal />
         </div>
         <div id="list-content" className="mt-10">
           <Box sx={{ height: "100%", width: "100%" }}>
             <DataGrid
-              rows={projects}
+              rows={filteredProjects}
               columns={columns}
               initialState={{
                 pagination: {

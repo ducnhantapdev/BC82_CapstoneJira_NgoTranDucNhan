@@ -1,4 +1,8 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  createSlice,
+  createAsyncThunk,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 import { getProjectsAPI } from "../apis/projects";
 import type { ProjectList } from "../apis/projects";
 
@@ -14,18 +18,24 @@ interface ProjectState {
   list: ProjectList[];
   loading: boolean;
   error: string | null;
+  searchTerm: string;
 }
 
 const initialState: ProjectState = {
   list: [],
   loading: false,
   error: null,
+  searchTerm: "",
 };
 
 const projectSlice = createSlice({
   name: "projects",
   initialState,
-  reducers: {},
+  reducers: {
+    setSearchTerm: (state, action: PayloadAction<string>) => {
+      state.searchTerm = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchProjects.pending, (state) => {
@@ -43,4 +53,5 @@ const projectSlice = createSlice({
   },
 });
 
+export const { setSearchTerm } = projectSlice.actions;
 export default projectSlice.reducer;
