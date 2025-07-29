@@ -4,31 +4,33 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import { toast, ToastContainer } from "react-toastify";
-import { deleteProject, getProjectsAPI } from "../../../../apis/projects";
+import { deleteProject } from "../../../../apis/projects";
 
 interface DeleteDialogProps {
   open: boolean;
   onClose: () => void;
   projectId: number;
+  onDelete: () => void;
 }
 
 const DeleteDialog: React.FC<DeleteDialogProps> = ({
   open,
   onClose,
   projectId,
+  onDelete,
 }) => {
   const handleDelete = async (id: number) => {
     {
       try {
         await deleteProject(id);
-        getProjectsAPI();
+
         toast.success("Xóa thành công");
+        onDelete();
         setTimeout(() => {
           onClose();
         }, 1000);
       } catch (error) {
         toast.error("Error deleting project:");
-
         console.error("Xoá thất bại", error);
         setTimeout(() => {
           onClose();
@@ -47,7 +49,9 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
       <DialogActions>
         <Button onClick={onClose}>Hủy</Button>
         <Button
-          onClick={() => handleDelete(projectId)}
+          onClick={() => {
+            handleDelete(projectId);
+          }}
           color="error"
           variant="contained"
         >

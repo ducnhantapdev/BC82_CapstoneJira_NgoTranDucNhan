@@ -22,7 +22,8 @@ import {
   type ProjectCategory,
 } from "../../apis/projects";
 import { toast, ToastContainer } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+
+import AddmemberModal from "./add-member";
 
 const schema = yup.object({
   projectName: yup.string().required("Vui lòng nhập tên project"),
@@ -38,6 +39,8 @@ type FormValues = {
 
 export default function CreateProject() {
   const [listCategories, setListCategories] = useState<ProjectCategory[]>([]);
+  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+
   const {
     handleSubmit,
     control,
@@ -52,8 +55,6 @@ export default function CreateProject() {
   });
   const userString = localStorage.getItem("user");
   const user = userString ? JSON.parse(userString) : null;
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     getCatogoriess();
@@ -78,11 +79,7 @@ export default function CreateProject() {
         categoryId: data.category,
         creator: user?.id,
       });
-      toast.success("Tạo project thành công!");
-
-      setTimeout(() => {
-        navigate("/");
-      }, 3000);
+      setIsAddMemberOpen(true);
     } catch (error) {
       toast.error("Tạo project thất bại!");
       console.error(error);
@@ -182,6 +179,10 @@ export default function CreateProject() {
           </form>
         </Box>
       </Box>
+      <AddmemberModal
+        open={isAddMemberOpen}
+        onClose={() => setIsAddMemberOpen(false)}
+      />
       <ToastContainer />
     </Container>
   );

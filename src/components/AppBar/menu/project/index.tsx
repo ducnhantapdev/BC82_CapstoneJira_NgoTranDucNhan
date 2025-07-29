@@ -3,6 +3,9 @@ import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "../../../../redux/store";
+import { fetchProjects } from "../../../../redux/projectSlice";
 
 export default function ProjectsMenu() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -12,6 +15,12 @@ export default function ProjectsMenu() {
   };
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const dispath = useDispatch<AppDispatch>();
+
+  const handleViewAllProject = () => {
+    dispath(fetchProjects());
   };
   return (
     <div>
@@ -36,7 +45,7 @@ export default function ProjectsMenu() {
           open={open}
           onClose={handleClose}
         >
-          <MenuItem onClick={handleClose}>View all projects</MenuItem>
+          <MenuItem onClick={handleViewAllProject}>View all projects</MenuItem>
           <MenuItem onClick={handleClose}>Create project</MenuItem>
         </Menu>
       </div>

@@ -52,7 +52,9 @@ export default function AppBar() {
           <div className="flex gap-2 items-center">
             <SearchBox
               value={searchText}
-              onChange={(value: string) => dispatch(setSearchTerm(value))}
+              onChange={(value: string) => {
+                dispatch(setSearchTerm(value));
+              }}
             />
             <SettingMenu />
             <AccoutMenu />

@@ -171,6 +171,7 @@ export default function ListProjects() {
         open={openDelete}
         onClose={() => setOpenDelete(false)}
         projectId={deleteId}
+        onDelete={() => void dispatch(fetchProjects())}
       />
     </>
   );
