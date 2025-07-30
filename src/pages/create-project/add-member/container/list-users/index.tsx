@@ -4,35 +4,56 @@ import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import { useEffect, useState } from "react";
 import { getUserById, getUsersAPI, type User } from "../../../../../apis/users";
-import { assignUserProject } from "../../../../../apis/projects";
+import {
+  assignUserProject,
+  removeUserFromProject,
+} from "../../../../../apis/projects";
 
 interface projectIdParam {
   projectId: number;
 }
 
+// Hàm chuẩn hóa tiếng Việt (loại bỏ dấu, chuyển về chữ thường, loại bỏ khoảng trắng thừa)
+function normalizeVN(str: string) {
+  return str
+    .normalize("NFD")
+    .replace(/[ -]/g, (c) => c) // giữ ký tự ASCII
+    .replace(/[ -]/g, (c) => c) // giữ ký tự ASCII
+    .replace(/[ -]/g, (c) => c) // giữ ký tự ASCII
+    .replace(/[ -]/g, (c) => c) // giữ ký tự ASCII
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .replace(/\s+/g, " ") // bỏ khoảng trắng thừa
+    .trim()
+    .toLowerCase()
+    .replace(/\p{Diacritic}/gu, "");
+}
+
 export default function AddUsersToProject(projectId: projectIdParam) {
   const [listUsers, setListUser] = useState<User[]>([]);
+  const [addedUsers, setAddedUsers] = useState<User[]>([]);
+  const [search, setSearch] = useState("");
 
   const id = projectId.projectId;
 
   useEffect(() => {
     getUser();
+    getProjectUsers();
   }, []);
 
   const getUser = async () => {
     try {
       const listUser = await getUsersAPI();
       setListUser(listUser);
-      console.log("listUser", listUser);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const getUserByIdd = async (id: number) => {
+  const getProjectUsers = async () => {
     try {
-      const res = await getUserById(id);
-      console.log(res);
+      const projectUsers = await getUserById(id);
+      setAddedUsers(projectUsers || []);
     } catch (error) {
       console.log("error", error);
     }
@@ -44,14 +65,72 @@ export default function AddUsersToProject(projectId: projectIdParam) {
         projectId: projectId,
         userId: userId,
       });
-      getUserByIdd(projectId);
+
+      const userToAdd = listUsers.find((user) => user.userId === userId);
+      if (userToAdd) {
+        setAddedUsers((prev) => [...prev, userToAdd]);
+        setListUser((prev) => prev.filter((user) => user.userId !== userId));
+      }
     } catch (error) {
       console.log(error);
     }
   };
 
+  const removeUserFromProjectHandler = async (
+    userId: number,
+    projectId: number
+  ) => {
+    try {
+      await removeUserFromProject({
+        projectId: projectId,
+        userId: userId,
+      });
+
+      const userToRemove = addedUsers.find((user) => user.userId === userId);
+      if (userToRemove) {
+        setListUser((prev) => [...prev, userToRemove]);
+        setAddedUsers((prev) => prev.filter((user) => user.userId !== userId));
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // Lọc user theo tên đã chuẩn hóa
+  const filteredUsers = listUsers.filter((user) =>
+    normalizeVN(user.name).includes(normalizeVN(search))
+  );
+
   return (
     <>
+      <div className=" w-[240px] min-w-[150px] relative my-4">
+        <div className="relative">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md pl-3 pr-10 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow"
+            placeholder="Search..."
+          />
+          <button
+            className="absolute right-1 top-1 rounded bg-slate-800 p-1.5 border border-transparent text-center text-sm text-white transition-all shadow-sm hover:shadow focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+            type="button"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+              className="w-4 h-4"
+            >
+              <path
+                fillRule="evenodd"
+                d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
       <div className="flex justify-between">
         <div className="users-left w-1/2">
           <h2>Chưa add users</h2>
@@ -67,10 +146,16 @@ export default function AddUsersToProject(projectId: projectIdParam) {
             }}
           >
             <ul>
-              {listUsers.map((item) => (
+              {filteredUsers.map((item) => (
                 <ListItem key={item.userId}>
-                  <ListItemText primary={item.name} />
-                  <Button onClick={() => addUserToProject(item.userId, id)}>
+                  <ListItemText
+                    primary={item.name}
+                    secondary={`User Id: ${item.userId}`}
+                  />
+                  <Button
+                    variant="contained"
+                    onClick={() => addUserToProject(item.userId, id)}
+                  >
                     Add
                   </Button>
                 </ListItem>
@@ -78,7 +163,7 @@ export default function AddUsersToProject(projectId: projectIdParam) {
             </ul>
           </List>
         </div>
-        <div className="users-left">
+        <div className="users-right w-1/2">
           <h2>Đã add users</h2>
           <List
             sx={{
@@ -92,12 +177,23 @@ export default function AddUsersToProject(projectId: projectIdParam) {
             }}
           >
             <ul>
-              {/* {[0, 1, 2].map((item) => (
-                    <ListItem key={`item-${sectionId}-${item}`}>
-                      <ListItemText primary={`Item ${item}`} />
-                      <Button>Add</Button>
-                    </ListItem>
-                  ))} */}
+              {addedUsers.map((item) => (
+                <ListItem key={item.userId} className="flex justify-between">
+                  <ListItemText
+                    primary={item.name}
+                    secondary={`User ID:${item.userId}`}
+                  />
+                  <Button
+                    onClick={() =>
+                      removeUserFromProjectHandler(item.userId, id)
+                    }
+                    color="error"
+                    variant="outlined"
+                  >
+                    Remove
+                  </Button>
+                </ListItem>
+              ))}
             </ul>
           </List>
         </div>

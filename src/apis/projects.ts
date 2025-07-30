@@ -24,7 +24,8 @@ export interface ProjectDetail {
   projectName: string;
   creator: number;
   description: string;
-  categoryId: number;
+  categoryId?: string;
+  id?: number;
 }
 
 export interface ProjectCategory {
@@ -35,6 +36,18 @@ export interface ProjectCategory {
 export interface UserAsign {
   userId: number;
   projectId: number;
+}
+
+export interface ProjectUpdate {
+  lstTask: Array<object>;
+  members: Array<object>;
+  creator: Array<object>;
+  id: number;
+  projectName: string;
+  description: string;
+  projectCategory: object;
+  categoryId: number;
+  alias: string;
 }
 
 export const getProjectsAPI = async () => {
@@ -64,13 +77,12 @@ export const createProject = async (projectData: ProjectDetail) => {
 
 export const getProjectDetailById = async (id: number) => {
   try {
-    const res = await fetcher.get<ApiResponse<ProjectList>>(
-      `Project/getProjectDetail?idProject=${id}`
+    const res = await fetcher.get<ApiResponse<ProjectUpdate>>(
+      `Project/getProjectDetail?id=${id}`
     );
     return res.data.content;
   } catch (error) {
     console.error("Error fetching project detail:", error);
-    throw error;
   }
 };
 
@@ -108,6 +120,32 @@ export const assignUserProject = async (data: UserAsign) => {
     return res.data.content;
   } catch (error) {
     console.error("Error fetching project list:", error);
+    throw error;
+  }
+};
+
+export const removeUserFromProject = async (data: UserAsign) => {
+  try {
+    const res = await fetcher.post<ApiResponse<{ message: string }>>(
+      "Project/removeUserFromProject",
+      data
+    );
+    return res.data.content;
+  } catch (error) {
+    console.error("Error fetching project list:", error);
+    throw error;
+  }
+};
+
+export const updateProject = async (id: number, data: ProjectDetail) => {
+  try {
+    const res = await fetcher.put<ApiResponse<{ message: string }>>(
+      `Project/updateProject?projectId=${id}`,
+      data
+    );
+    return res.data.content;
+  } catch (error) {
+    console.error("Error updating project:", error);
     throw error;
   }
 };

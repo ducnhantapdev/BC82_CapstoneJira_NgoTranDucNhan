@@ -31,7 +31,7 @@ export default function ListProjects() {
   );
 
   const dispatch = useDispatch<AppDispatch>();
-  const { list: projects } = useSelector((state: RootState) => state.projects);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -138,8 +138,6 @@ export default function ListProjects() {
       ),
     },
   ];
-
-  console.log("Current projects state:", projects);
 
   return (
     <>

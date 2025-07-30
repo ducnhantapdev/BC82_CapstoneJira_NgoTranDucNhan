@@ -24,22 +24,25 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 
 import AddmemberModal from "./add-member";
+import { useNavigate } from "react-router-dom";
 
 const schema = yup.object({
   projectName: yup.string().required("Vui lòng nhập tên project"),
-  category: yup.number().required("Vui lòng chọn danh mục"),
+  category: yup.string().required("Vui lòng chọn danh mục"),
   description: yup.string().required("Vui lòng nhập mô tả"),
 });
 
 type FormValues = {
   projectName: string;
-  category: number;
+  category: string;
   description: string;
 };
 
 export default function CreateProject() {
   const [listCategories, setListCategories] = useState<ProjectCategory[]>([]);
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+
+  const navigate = useNavigate();
 
   const {
     handleSubmit,
@@ -49,7 +52,7 @@ export default function CreateProject() {
     resolver: yupResolver(schema),
     defaultValues: {
       projectName: "",
-      category: 1,
+      category: "1",
       description: "",
     },
   });
@@ -174,7 +177,11 @@ export default function CreateProject() {
             </Box>
 
             <Box display="flex" justifyContent="flex-end" gap={2}>
-              <Button variant="outlined" type="button">
+              <Button
+                variant="outlined"
+                type="button"
+                onClick={() => navigate("/")}
+              >
                 Cancel
               </Button>
               <Button variant="contained" type="submit">
