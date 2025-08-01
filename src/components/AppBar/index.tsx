@@ -13,6 +13,7 @@ import SearchBox from "./menu/search";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../redux/store";
 import { setSearchTerm } from "../../redux/projectSlice";
+import theme from "../../theme";
 
 export default function AppBar() {
   const dispatch = useDispatch<AppDispatch>();
@@ -27,8 +28,8 @@ export default function AppBar() {
         boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
         backgroundColor: "white",
         width: "100%",
+        height: theme.jiraCustom.appBarHeight,
         position: "sticky",
-
         zIndex: 1000,
       }}
     >

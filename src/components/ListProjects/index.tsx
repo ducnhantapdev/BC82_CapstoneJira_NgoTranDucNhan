@@ -9,6 +9,7 @@ import CreateProjectModal from "../AppBar/menu/create-project-modal";
 import { type ProjectList } from "../../apis/projects";
 import ActionMenu from "./action";
 import { useNavigate } from "react-router-dom";
+import { Typography } from "@mui/material";
 
 import DeleteDialog from "./action/delete";
 
@@ -34,6 +35,10 @@ export default function ListProjects() {
 
   const navigate = useNavigate();
 
+  const toProjectDetailUrl = (id: number) => {
+    return `/project/${id}`;
+  };
+
   useEffect(() => {
     dispatch(fetchProjects());
   }, [dispatch]);
@@ -54,6 +59,16 @@ export default function ListProjects() {
       headerName: "Project Name",
       width: 250,
       editable: true,
+      renderCell: (params) => (
+        <Typography
+          color="primary"
+          sx={{ cursor: "pointer", fontWeight: 600 }}
+          onClick={() => navigate(toProjectDetailUrl(params.row.id))}
+          className="pt-3"
+        >
+          {params.row.projectName}
+        </Typography>
+      ),
     },
     {
       field: "categoryName",
