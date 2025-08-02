@@ -38,8 +38,27 @@ export interface UserAsign {
   projectId: number;
 }
 
+export interface Task {
+  id: number;
+  statusName: string;
+  description?: string;
+  status?: string;
+  priority?: string;
+  assignee?: string;
+  dueDate?: string;
+  lstTaskDeTail?: TaskDetail[];
+}
+
+export interface TaskDetail {
+  id: number;
+  taskName: string;
+  description?: string;
+  priority?: string;
+  assignee?: string;
+}
+
 export interface ProjectUpdate {
-  lstTask: Array<object>;
+  lstTask: Task[];
   members: Array<object>;
   creator: Array<object>;
   id: number;

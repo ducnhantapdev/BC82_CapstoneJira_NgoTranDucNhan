@@ -1,55 +1,75 @@
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
+import { useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchProjectDetail,
+  clearCurrentProject,
+} from "../../redux/projectSlice";
+import type { AppDispatch, RootState } from "../../redux/store";
 
 import { BOARD_CONTENT_HEIGHT } from "../../theme";
 
-import BackLog from "./backlog";
-import Selected from "./selected";
-import Inprogress from "./ingroress";
-import Done from "./done";
+import { DndContext, type DragEndEvent } from "@dnd-kit/core";
+import BoardHeader from "./header";
+import BoardMain from "./board-main";
+import type { ProjectDetail } from "../../apis/projects";
 
 export default function ProjectDetail() {
+  const { id } = useParams<{ id: string }>();
+  const dispatch = useDispatch<AppDispatch>();
+
+  const { currentProject, loading } = useSelector(
+    (state: RootState) => state.projects
+  );
+
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchProjectDetail(parseInt(id)));
+    }
+
+    return () => {
+      dispatch(clearCurrentProject());
+    };
+  }, [id, dispatch]);
+
+  const handleDragEnd = (e: DragEndEvent) => {
+    console.log("event", e);
+  };
+
+  if (loading) {
+    return <div>Đang tải...</div>;
+  }
+
   return (
     <>
-      <div className="project-detais w-full">
-        {/* Box */}
-        <Box
-          sx={{
-            maxWidth: "1200px",
-            margin: "0 auto",
-            pt: 2,
-            height: BOARD_CONTENT_HEIGHT,
-          }}
-        >
-          <div className="board-header flex justify-start items-center gap-2 pb-5">
-            <Typography
-              sx={{ fontSize: "1.5rem", fontWeight: "bold", width: "40%" }}
-            >
-              Board
-            </Typography>
-            <div className="members">
-              <Typography sx={{ fontSize: "1.2rem", fontWeight: "normal" }}>
-                Memers :
-              </Typography>
-            </div>
-          </div>
+      <DndContext onDragEnd={handleDragEnd}>
+        <div className="project-detais w-full">
+          {/* Box */}
           <Box
             sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              gap: 2,
+              maxWidth: "1200px",
+              margin: "0 auto",
+              pt: 2,
+              height: BOARD_CONTENT_HEIGHT,
             }}
           >
-            {/* Column 1*/}
-            <BackLog />
-            {/* Column 2*/}
-            <Selected />
-            {/* Column 3*/}
-            <Inprogress />
-            {/* Column 4*/}
-            <Done />
+            <BoardHeader project={currentProject} />
+            <DndContext>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 2,
+                }}
+              >
+                {/* Column 1*/}
+                <BoardMain project={currentProject} />
+              </Box>
+            </DndContext>
           </Box>
-        </Box>
-      </div>
+        </div>
+      </DndContext>
     </>
   );
 }
