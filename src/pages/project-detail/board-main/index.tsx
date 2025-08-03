@@ -29,7 +29,7 @@ export default function BoardMain({ project }: BoardMainProps) {
       taskId: number,
       newStatusId: number,
       draggedItem: TaskDetail & { statusId: number },
-      targetIndex?: number
+      dropIndex?: number
     ) => {
       if (isUpdating) return;
 
@@ -45,24 +45,18 @@ export default function BoardMain({ project }: BoardMainProps) {
             task.statusId === draggedItem.statusId &&
             task.statusId === newStatusId
           ) {
-            // Hoán đổi vị trí trong cùng column
-            const currentTasks = [...(task.lstTaskDeTail || [])];
-            const draggedIndex = currentTasks.findIndex(
-              (t) => t.taskId === taskId
-            );
+            // Thay đổi vị trí trong cùng column
+            const currentTasks =
+              task.lstTaskDeTail?.filter((t) => t.taskId !== taskId) || [];
+            const insertIndex =
+              dropIndex !== undefined ? dropIndex : currentTasks.length;
+            const newTasks = [...currentTasks];
+            newTasks.splice(insertIndex, 0, { ...draggedItem });
 
-            if (draggedIndex !== -1 && targetIndex !== undefined) {
-              // Xóa task khỏi vị trí cũ
-              currentTasks.splice(draggedIndex, 1);
-              // Chèn task vào vị trí mới
-              currentTasks.splice(targetIndex, 0, draggedItem);
-
-              return {
-                ...task,
-                lstTaskDeTail: currentTasks,
-              };
-            }
-            return task;
+            return {
+              ...task,
+              lstTaskDeTail: newTasks,
+            };
           } else if (task.statusId === draggedItem.statusId) {
             // Xóa task khỏi column cũ
             return {
@@ -71,17 +65,19 @@ export default function BoardMain({ project }: BoardMainProps) {
                 task.lstTaskDeTail?.filter((t) => t.taskId !== taskId) || [],
             };
           } else if (task.statusId === newStatusId) {
-            // Thêm task vào column mới
-            const targetIdx =
-              targetIndex !== undefined
-                ? targetIndex
-                : task.lstTaskDeTail?.length || 0;
-            const currentTasks = [...(task.lstTaskDeTail || [])];
-            currentTasks.splice(targetIdx, 0, draggedItem);
+            // Thêm task vào column mới tại vị trí drop
+            const currentTasks = task.lstTaskDeTail || [];
+            // Điều chỉnh index nếu task được thêm vào column khác
+            const adjustedIndex =
+              draggedItem.statusId !== newStatusId ? dropIndex : dropIndex;
+            const insertIndex =
+              adjustedIndex !== undefined ? adjustedIndex : currentTasks.length;
+            const newTasks = [...currentTasks];
+            newTasks.splice(insertIndex, 0, { ...draggedItem });
 
             return {
               ...task,
-              lstTaskDeTail: currentTasks,
+              lstTaskDeTail: newTasks,
             };
           }
           return task;
@@ -118,27 +114,22 @@ export default function BoardMain({ project }: BoardMainProps) {
     >({
       accept: "TASK",
       drop: (draggedItem) => {
-        if (draggedItem.statusId === taskDetails.statusId) {
-          // Hoán đổi vị trí trong cùng column
-          handleTaskUpdate(
-            draggedItem.taskId,
-            taskDetails.statusId,
-            draggedItem,
-            hoveredIndex || 0
-          );
-        } else {
-          // Di chuyển sang column khác
-          handleTaskUpdate(
-            draggedItem.taskId,
-            taskDetails.statusId,
-            draggedItem,
-            hoveredIndex || undefined
-          );
-        }
+        const dropIndex =
+          hoveredIndex !== null
+            ? hoveredIndex
+            : taskDetails.lstTaskDeTail?.length || 0;
+
+        handleTaskUpdate(
+          draggedItem.taskId,
+          taskDetails.statusId,
+          draggedItem,
+          dropIndex
+        );
+
+        // Reset hoveredIndex sau khi drop
+        setHoveredIndex(null);
       },
       hover: (draggedItem, monitor) => {
-        if (draggedItem.statusId !== taskDetails.statusId) return;
-
         const hoverBoundingRect = columnRef.current?.getBoundingClientRect();
         if (!hoverBoundingRect) return;
 
@@ -151,17 +142,37 @@ export default function BoardMain({ project }: BoardMainProps) {
         const taskElements =
           columnRef.current?.querySelectorAll("[data-task-index]");
         if (taskElements) {
+          let foundIndex = taskElements.length; // Mặc định là cuối
+
           for (let i = 0; i < taskElements.length; i++) {
             const element = taskElements[i] as HTMLElement;
             const rect = element.getBoundingClientRect();
-            const elementMiddleY = (rect.bottom - rect.top) / 2;
 
-            if (hoverClientY < elementMiddleY) {
-              setHoveredIndex(i);
-              break;
+            // So sánh với task trước đó (nếu có)
+            if (i > 0) {
+              const prevElement = taskElements[i - 1] as HTMLElement;
+              const prevRect = prevElement.getBoundingClientRect();
+              const prevBottom = prevRect.bottom;
+
+              // Cần kéo cao hơn task trước đó để thay đổi vị trí
+              if (hoverClientY < prevBottom) {
+                foundIndex = i;
+                break;
+              }
+            } else {
+              // Task đầu tiên - chỉ cần kéo cao hơn 20% của task hiện tại
+              const elementTop = rect.top;
+              const elementHeight = rect.bottom - rect.top;
+              const threshold = elementTop + elementHeight * 0.2;
+
+              if (hoverClientY < threshold) {
+                foundIndex = i;
+                break;
+              }
             }
-            setHoveredIndex(i + 1);
           }
+
+          setHoveredIndex(foundIndex);
         }
       },
       collect: (monitor) => ({
