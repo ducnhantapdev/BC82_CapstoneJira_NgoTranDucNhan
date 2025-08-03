@@ -1,16 +1,33 @@
 import { Box, Card, Chip, Typography, Avatar } from "@mui/material";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+
+import { useDrag } from "react-dnd";
+import { useRef, useEffect } from "react";
 import type { TaskDetail } from "../../apis/projects";
 
 interface PropsFromBoardMain {
-  props: TaskDetail;
+  props: TaskDetail & { statusId: number }; // cần thêm statusId để xác định column cũ
 }
 
 const TaskCard = ({ props }: PropsFromBoardMain) => {
-  console.log("props:", props);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [{ isDragging }, drag] = useDrag({
+    type: "TASK",
+    item: props,
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  useEffect(() => {
+    if (cardRef.current) {
+      drag(cardRef.current);
+    }
+  }, [drag]);
+
   return (
-    <Box>
+    <Box ref={cardRef}>
       <Card
         sx={{
           p: 1,
@@ -19,8 +36,15 @@ const TaskCard = ({ props }: PropsFromBoardMain) => {
           justifyContent: "space-between",
           width: "100%",
           borderRadius: 2,
-          boxShadow: 1,
+          boxShadow: isDragging ? 4 : 1,
           marginBottom: 1,
+          opacity: isDragging ? 0.5 : 1,
+          transform: isDragging ? "rotate(5deg)" : "rotate(0deg)",
+          transition: "all 0.2s ease",
+          cursor: "grab",
+          "&:active": {
+            cursor: "grabbing",
+          },
         }}
       >
         <Typography variant="body1" fontWeight={500}>

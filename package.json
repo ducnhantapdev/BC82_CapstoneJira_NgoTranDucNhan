@@ -37,6 +37,8 @@
     "lucide-react": "^0.533.0",
     "npm": "^11.4.2",
     "react": "^19.1.0",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.60.0",
     "react-redux": "^9.2.0",

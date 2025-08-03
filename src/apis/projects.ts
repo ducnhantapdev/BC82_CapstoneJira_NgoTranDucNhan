@@ -39,7 +39,7 @@ export interface UserAsign {
 }
 
 export interface Task {
-  id: number;
+  statusId: number;
   statusName: string;
   description?: string;
   status?: string;
@@ -50,7 +50,7 @@ export interface Task {
 }
 
 export interface TaskDetail {
-  id: number;
+  taskId: number;
   taskName: string;
   description?: string;
   priority?: string;
@@ -67,6 +67,11 @@ export interface ProjectUpdate {
   projectCategory: object;
   categoryId: number;
   alias: string;
+}
+
+export interface UpdateStatus {
+  taskId: number;
+  statusId: number;
 }
 
 export const getProjectsAPI = async () => {
@@ -160,6 +165,19 @@ export const updateProject = async (id: number, data: ProjectDetail) => {
   try {
     const res = await fetcher.put<ApiResponse<{ message: string }>>(
       `Project/updateProject?projectId=${id}`,
+      data
+    );
+    return res.data.content;
+  } catch (error) {
+    console.error("Error updating project:", error);
+    throw error;
+  }
+};
+
+export const updateStatus = async (data: UpdateStatus) => {
+  try {
+    const res = await fetcher.put<ApiResponse<{ message: string }>>(
+      `Project/updateStatus`,
       data
     );
     return res.data.content;

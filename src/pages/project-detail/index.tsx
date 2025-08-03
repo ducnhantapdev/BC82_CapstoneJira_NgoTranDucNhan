@@ -10,7 +10,6 @@ import type { AppDispatch, RootState } from "../../redux/store";
 
 import { BOARD_CONTENT_HEIGHT } from "../../theme";
 
-import { DndContext, type DragEndEvent } from "@dnd-kit/core";
 import BoardHeader from "./header";
 import BoardMain from "./board-main";
 import type { ProjectDetail } from "../../apis/projects";
@@ -33,43 +32,36 @@ export default function ProjectDetail() {
     };
   }, [id, dispatch]);
 
-  const handleDragEnd = (e: DragEndEvent) => {
-    console.log("event", e);
-  };
-
   if (loading) {
     return <div>Đang tải...</div>;
   }
 
   return (
     <>
-      <DndContext onDragEnd={handleDragEnd}>
-        <div className="project-detais w-full">
-          {/* Box */}
+      <div className="project-detais w-full">
+        {/* Box */}
+        <Box
+          sx={{
+            maxWidth: "1200px",
+            margin: "0 auto",
+            pt: 2,
+            height: BOARD_CONTENT_HEIGHT,
+          }}
+        >
+          <BoardHeader project={currentProject} />
+
           <Box
             sx={{
-              maxWidth: "1200px",
-              margin: "0 auto",
-              pt: 2,
-              height: BOARD_CONTENT_HEIGHT,
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 2,
             }}
           >
-            <BoardHeader project={currentProject} />
-            <DndContext>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: 2,
-                }}
-              >
-                {/* Column 1*/}
-                <BoardMain project={currentProject} />
-              </Box>
-            </DndContext>
+            {/* Column 1*/}
+            <BoardMain project={currentProject} />
           </Box>
-        </div>
-      </DndContext>
+        </Box>
+      </div>
     </>
   );
 }
