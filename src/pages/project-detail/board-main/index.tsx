@@ -144,30 +144,74 @@ export default function BoardMain({ project }: BoardMainProps) {
         if (taskElements) {
           let foundIndex = taskElements.length; // Mặc định là cuối
 
-          for (let i = 0; i < taskElements.length; i++) {
-            const element = taskElements[i] as HTMLElement;
-            const rect = element.getBoundingClientRect();
+          // Logic cải tiến cho việc kéo thả - chỉ chèn khi kéo cao hơn task hiện có
+          if (draggedItem.statusId !== taskDetails.statusId) {
+            // Kéo từ column khác sang column mới
+            for (let i = 0; i < taskElements.length; i++) {
+              const element = taskElements[i] as HTMLElement;
+              const rect = element.getBoundingClientRect();
+              const elementTop = rect.top - hoverBoundingRect.top;
+              const elementBottom = rect.bottom - hoverBoundingRect.top;
 
-            // So sánh với task trước đó (nếu có)
-            if (i > 0) {
-              const prevElement = taskElements[i - 1] as HTMLElement;
-              const prevRect = prevElement.getBoundingClientRect();
-              const prevBottom = prevRect.bottom;
-
-              // Cần kéo cao hơn task trước đó để thay đổi vị trí
-              if (hoverClientY < prevBottom) {
+              // Chỉ chèn khi kéo cao hơn task hiện tại (hoverClientY < elementTop)
+              // Nếu kéo vào giữa task, không thay đổi vị trí
+              if (hoverClientY < elementTop) {
+                foundIndex = i;
+                break;
+              } else if (
+                hoverClientY >= elementTop &&
+                hoverClientY <= elementBottom
+              ) {
+                // Kéo vào giữa task - giữ nguyên vị trí
                 foundIndex = i;
                 break;
               }
-            } else {
-              // Task đầu tiên - chỉ cần kéo cao hơn 20% của task hiện tại
-              const elementTop = rect.top;
-              const elementHeight = rect.bottom - rect.top;
-              const threshold = elementTop + elementHeight * 0.2;
+            }
 
-              if (hoverClientY < threshold) {
+            // Nếu kéo xuống dưới task cuối cùng - thêm vào cuối
+            if (taskElements.length > 0) {
+              const lastElement = taskElements[
+                taskElements.length - 1
+              ] as HTMLElement;
+              const lastRect = lastElement.getBoundingClientRect();
+              const lastBottom = lastRect.bottom - hoverBoundingRect.top;
+
+              if (hoverClientY >= lastBottom) {
+                foundIndex = taskElements.length;
+              }
+            }
+          } else {
+            // Logic cho cùng column - cần kéo cao hơn để thay đổi vị trí
+            for (let i = 0; i < taskElements.length; i++) {
+              const element = taskElements[i] as HTMLElement;
+              const rect = element.getBoundingClientRect();
+              const elementTop = rect.top - hoverBoundingRect.top;
+              const elementBottom = rect.bottom - hoverBoundingRect.top;
+
+              // Chỉ thay đổi vị trí khi kéo cao hơn task hiện tại
+              if (hoverClientY < elementTop) {
                 foundIndex = i;
                 break;
+              } else if (
+                hoverClientY >= elementTop &&
+                hoverClientY <= elementBottom
+              ) {
+                // Kéo vào giữa task - giữ nguyên vị trí
+                foundIndex = i;
+                break;
+              }
+            }
+
+            // Xử lý task cuối cùng - thêm vào cuối nếu kéo xuống dưới
+            if (taskElements.length > 0) {
+              const lastElement = taskElements[
+                taskElements.length - 1
+              ] as HTMLElement;
+              const lastRect = lastElement.getBoundingClientRect();
+              const lastBottom = lastRect.bottom - hoverBoundingRect.top;
+
+              if (hoverClientY >= lastBottom) {
+                foundIndex = taskElements.length;
               }
             }
           }
@@ -195,11 +239,38 @@ export default function BoardMain({ project }: BoardMainProps) {
           gap: "10px",
           minWidth: "300px",
           maxWidth: "300px",
-          backgroundColor: isOverCurrent ? "#e0e0e0" : "gray",
-          borderRadius: "6px",
-          transition: "all 0.2s ease",
+          backgroundColor: isOverCurrent ? "#f5f5f5" : "gray",
+          borderRadius: "8px",
+          transition: "all 0.3s ease",
           transform: isOverCurrent ? "scale(1.02)" : "scale(1)",
-          boxShadow: isOverCurrent ? "0 4px 8px rgba(0,0,0,0.2)" : "none",
+          boxShadow: isOverCurrent
+            ? "0 8px 16px rgba(25, 118, 210, 0.2)"
+            : "0 2px 4px rgba(0,0,0,0.1)",
+          // Hiệu ứng kéo task ra khỏi column
+          "&::before": isOverCurrent
+            ? {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                border: "3px dashed #1976d2",
+                borderRadius: "8px",
+                pointerEvents: "none",
+                zIndex: 1,
+                animation: "pulse 1.5s infinite",
+                "@keyframes pulse": {
+                  "0%": { opacity: 0.6 },
+                  "50%": { opacity: 1 },
+                  "100%": { opacity: 0.6 },
+                },
+              }
+            : {},
+          position: "relative",
+          "&:hover": {
+            boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
+          },
         }}
       >
         {/* Header */}
@@ -231,7 +302,7 @@ export default function BoardMain({ project }: BoardMainProps) {
               sx={{
                 transform:
                   hoveredIndex === index ? "translateY(8px)" : "translateY(0)",
-                transition: "transform 0.2s ease",
+                transition: "all 0.2s ease",
                 position: "relative",
                 "&::before":
                   hoveredIndex === index
@@ -241,16 +312,74 @@ export default function BoardMain({ project }: BoardMainProps) {
                         top: "-4px",
                         left: 0,
                         right: 0,
-                        height: "2px",
+                        height: "3px",
                         backgroundColor: "#1976d2",
-                        borderRadius: "1px",
+                        borderRadius: "2px",
+                        boxShadow: "0 2px 4px rgba(25, 118, 210, 0.3)",
                       }
                     : {},
+                "&::after":
+                  hoveredIndex === index
+                    ? {
+                        content: '""',
+                        position: "absolute",
+                        top: "-8px",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        width: "0",
+                        height: "0",
+                        borderLeft: "6px solid transparent",
+                        borderRight: "6px solid transparent",
+                        borderBottom: "6px solid #1976d2",
+                      }
+                    : {},
+                // Hiệu ứng kéo ra khỏi column
+                "&:hover": {
+                  transform: "scale(1.02)",
+                  boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+                  zIndex: 10,
+                },
+                // Hiệu ứng khi đang kéo task
+                "& .dragging": {
+                  transform: "rotate(5deg) scale(1.05)",
+                  boxShadow: "0 8px 16px rgba(0,0,0,0.3)",
+                  zIndex: 100,
+                  opacity: 0.8,
+                },
               }}
             >
               <TaskCard props={{ ...item, statusId: taskDetails.statusId }} />
             </Box>
           ))}
+
+          {/* Hiển thị drop zone khi hover ở cuối column */}
+          {hoveredIndex === taskDetails.lstTaskDeTail?.length && (
+            <Box
+              sx={{
+                height: "60px",
+                border: "2px dashed #1976d2",
+                borderRadius: "8px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "rgba(25, 118, 210, 0.1)",
+                marginTop: "8px",
+                transition: "all 0.2s ease",
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  width: "20px",
+                  height: "20px",
+                  backgroundColor: "#1976d2",
+                  borderRadius: "50%",
+                  opacity: 0.6,
+                },
+              }}
+            />
+          )}
         </Box>
 
         {/* Footer (chỉ hiện cho BACKLOG) */}
