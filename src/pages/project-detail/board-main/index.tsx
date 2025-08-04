@@ -239,7 +239,7 @@ export default function BoardMain({ project }: BoardMainProps) {
           gap: "10px",
           minWidth: "300px",
           maxWidth: "300px",
-          backgroundColor: isOverCurrent ? "#f5f5f5" : "gray",
+          backgroundColor: isOverCurrent ? "#f5f5f5" : "#F3F4F6",
           borderRadius: "8px",
           transition: "all 0.3s ease",
           transform: isOverCurrent ? "scale(1.02)" : "scale(1)",

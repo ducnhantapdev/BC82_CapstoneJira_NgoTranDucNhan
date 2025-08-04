@@ -1,5 +1,5 @@
-import AppBar from "../../components/AppBar";
-import ListProjects from "../../components/ListProjects";
+import AppBar from "../../components/appBar";
+import ListProjects from "../../components/listProjects";
 
 export default function Home() {
   return (

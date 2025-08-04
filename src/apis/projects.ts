@@ -74,6 +74,40 @@ export interface UpdateStatus {
   statusId: number;
 }
 
+export interface Priority {
+  priorityId: number;
+  projectCategoryName: string;
+  description: "string";
+  deleted: boolean;
+  alias: string;
+  priority: "tring";
+}
+
+export interface Status {
+  statusId: number;
+  statusName: string;
+  alias: string;
+  delete: boolean;
+}
+
+export interface TaskType {
+  id: 2;
+  taskType: string;
+}
+
+export interface CreateTask {
+  listUserAsign: number[];
+  taskName: string;
+  description: string;
+  statusId: number;
+  originalEstimate?: number;
+  timeTrackingSpent?: number;
+  timeTrackingRemaining?: number;
+  projectId: number;
+  typeId: number;
+  priorityId: number;
+}
+
 export const getProjectsAPI = async () => {
   try {
     const res = await fetcher.get<ApiResponse<ProjectList[]>>(
@@ -183,6 +217,53 @@ export const updateStatus = async (data: UpdateStatus) => {
     return res.data.content;
   } catch (error) {
     console.error("Error updating project:", error);
+    throw error;
+  }
+};
+
+export const getAllStatus = async () => {
+  try {
+    const res = await fetcher.get<ApiResponse<ProjectList[]>>("/Status/getAll");
+    return res.data.content;
+  } catch (error) {
+    console.error("Error fetching project list:", error);
+    throw error;
+  }
+};
+
+export const getAllPriority = async () => {
+  try {
+    const res = await fetcher.get<ApiResponse<ProjectList[]>>(
+      "/Priority/getAll"
+    );
+    return res.data.content;
+  } catch (error) {
+    console.error("Error fetching status:", error);
+    throw error;
+  }
+};
+
+export const getAllTaskType = async () => {
+  try {
+    const res = await fetcher.get<ApiResponse<ProjectList[]>>(
+      "/TaskType/getAll"
+    );
+    return res.data.content;
+  } catch (error) {
+    console.error("Error fetching task type:", error);
+    throw error;
+  }
+};
+
+export const createTask = async (data: CreateTask) => {
+  try {
+    const res = await fetcher.post<ApiResponse<{ message: string }>>(
+      "Project/createTask",
+      data
+    );
+    return res.data.content;
+  } catch (error) {
+    console.error("Error fetching task:", error);
     throw error;
   }
 };

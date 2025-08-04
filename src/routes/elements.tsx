@@ -1,10 +1,10 @@
 import { useRoutes } from "react-router-dom";
 import { PATH } from "./path";
 
-import Login from "../components/form-login";
+import Login from "../components/formLogin";
 
 import Home from "../pages/home";
-import PrivateRoute from "../components/PrivateRoute";
+import PrivateRoute from "../components/privateRoute";
 import CreateProject from "../pages/create-project";
 import HomeLayout from "../components/layout/home-layout";
 import UpdateProject from "../pages/update-project";

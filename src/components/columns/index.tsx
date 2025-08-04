@@ -3,11 +3,11 @@ import { Box, Typography, Button } from "@mui/material";
 import { useDrop } from "react-dnd";
 import AddCardIcon from "@mui/icons-material/AddCard";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { type Task, type TaskDetail, updateStatus } from "../../apis/projects";
-import CustomizedMenus from "../Dropdown-workspace";
+import CustomizedMenus from "../dropdownWorkspace";
 import TaskCard from "../taskCard";
-import TaskInput from "../TaskInput";
+import TaskInput from "../taskInput";
 
 interface ColumnProps {
   taskDetails: Task;
@@ -18,12 +18,12 @@ interface ColumnProps {
 
 export default function Column({
   taskDetails,
-  index,
-  projectId,
+
   onTaskMoved,
 }: ColumnProps) {
   const [showInput, setShowInput] = useState(false);
   const inputRef = useRef<HTMLDivElement | null>(null);
+  const dropRef = useRef<HTMLDivElement | null>(null);
 
   const [, drop] = useDrop({
     accept: "TASK",
@@ -42,9 +42,15 @@ export default function Column({
     },
   });
 
+  useEffect(() => {
+    if (dropRef.current) {
+      drop(dropRef.current);
+    }
+  }, [drop]);
+
   return (
     <Box
-      ref={drop}
+      ref={dropRef}
       sx={{
         display: "flex",
         flexDirection: "column",

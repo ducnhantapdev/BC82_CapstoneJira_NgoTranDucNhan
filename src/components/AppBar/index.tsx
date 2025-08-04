@@ -1,19 +1,18 @@
 import Box from "@mui/material/Box";
 import Logo from "../../assets/ico.png";
-import ProjectsMenu from "./menu/project";
-import UsersMenu from "./menu/users";
 
-import Button from "@mui/material/Button";
-
-import AccoutMenu from "./menu/account-menu";
-import SettingMenu from "./menu/setting-icon";
 import { useNavigate } from "react-router-dom";
 
-import SearchBox from "./menu/search";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../redux/store";
 import { setSearchTerm } from "../../redux/projectSlice";
 import theme from "../../theme";
+import ProjectsMenu from "./menu/project";
+import UsersMenu from "./menu/users";
+import SearchBox from "./menu/search";
+import SettingMenu from "./menu/setting-icon";
+import AccoutMenu from "./menu/account-menu";
+import CreateTaskOnMenu from "../createTaskOnMenu";
 
 export default function AppBar() {
   const dispatch = useDispatch<AppDispatch>();
@@ -48,7 +47,12 @@ export default function AppBar() {
             <span className="text-2xl font-bold">Jira</span>
             <ProjectsMenu />
             <UsersMenu />
-            <Button variant="outlined">Create Task</Button>
+            <CreateTaskOnMenu
+              onTaskCreated={() => {
+                // Refresh page hoặc reload data khi tạo task thành công
+                window.location.reload();
+              }}
+            />
           </div>
           <div className="flex gap-2 items-center">
             <SearchBox

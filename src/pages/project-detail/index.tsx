@@ -55,6 +55,7 @@ export default function ProjectDetail() {
               display: "flex",
               justifyContent: "space-between",
               gap: 2,
+              alignItems: "flex-start",
             }}
           >
             {/* Column 1*/}
