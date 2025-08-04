@@ -138,7 +138,6 @@ export default function BoardMain({ project }: BoardMainProps) {
 
         const hoverClientY = clientOffset.y - hoverBoundingRect.top;
 
-        // Tìm index của task đang hover
         const taskElements =
           columnRef.current?.querySelectorAll("[data-task-index]");
         if (taskElements) {
