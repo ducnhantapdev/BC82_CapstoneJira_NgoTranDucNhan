@@ -7,7 +7,7 @@ import { useState, useRef, useEffect } from "react";
 import { type Task, type TaskDetail, updateStatus } from "../../apis/projects";
 import CustomizedMenus from "../dropdownWorkspace";
 import TaskCard from "../taskCard";
-import TaskInput from "../taskInput";
+import TaskInput from "../TaskInput";
 
 interface ColumnProps {
   taskDetails: Task;
