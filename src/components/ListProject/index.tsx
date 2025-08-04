@@ -5,15 +5,13 @@ import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchProjects } from "../../redux/projectSlice";
 import type { RootState, AppDispatch } from "../../redux/store";
-import CreateProjectModal from "../appBar/menu/create-project-modal";
+import CreateProjectModal from "../AppBar/menu/create-project-modal";
 import { type ProjectList } from "../../apis/projects";
 
 import { useNavigate } from "react-router-dom";
 import { Typography } from "@mui/material";
 import ActionMenu from "./action";
 import DeleteDialog from "./action/delete";
-
-
 
 interface memberProps {
   userId: number;

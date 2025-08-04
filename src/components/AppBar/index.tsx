@@ -7,12 +7,13 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../redux/store";
 import { setSearchTerm } from "../../redux/projectSlice";
 import theme from "../../theme";
+
+import CreateTaskOnMenu from "../createTaskOnMenu";
 import ProjectsMenu from "./menu/project";
 import UsersMenu from "./menu/users";
 import SearchBox from "./menu/search";
 import SettingMenu from "./menu/setting-icon";
 import AccoutMenu from "./menu/account-menu";
-import CreateTaskOnMenu from "../createTaskOnMenu";
 
 export default function AppBar() {
   const dispatch = useDispatch<AppDispatch>();

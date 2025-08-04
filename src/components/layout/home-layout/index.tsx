@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import AppBar from "../../appBar";
+import AppBar from "../../AppBar";
 
 interface HomeLayoutProps {
   children: ReactNode;

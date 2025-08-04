@@ -1,4 +1,4 @@
-import UpdateAction from "../../components/listProjects/action/update";
+import UpdateAction from "../../components/ListProject/action/update";
 
 export default function UpdateProject() {
   return (
