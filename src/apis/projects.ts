@@ -36,6 +36,8 @@ export interface ProjectCategory {
 export interface UserAsign {
   userId: number;
   projectId: number;
+  avatar?: string;
+  name?: string;
 }
 
 export interface Task {
@@ -55,6 +57,14 @@ export interface TaskDetail {
   description?: string;
   priority?: string;
   assignee?: string;
+  taskType?: string;
+  assigness?: UserAsign[];
+  priorityTask?: PriorityTask;
+}
+
+export interface PriorityTask {
+  priorityId: number;
+  priority: string;
 }
 
 export interface ProjectUpdate {
@@ -105,6 +115,16 @@ export interface CreateTask {
   timeTrackingRemaining?: number;
   projectId: number;
   typeId: number;
+  priorityId: number;
+}
+
+export interface Description {
+  taskId: number;
+  description: "string";
+}
+
+export interface Priority {
+  taskId: number;
   priorityId: number;
 }
 
@@ -259,6 +279,32 @@ export const createTask = async (data: CreateTask) => {
   try {
     const res = await fetcher.post<ApiResponse<{ message: string }>>(
       "Project/createTask",
+      data
+    );
+    return res.data.content;
+  } catch (error) {
+    console.error("Error fetching task:", error);
+    throw error;
+  }
+};
+
+export const updateDescription = async (id: number, data: Description) => {
+  try {
+    const res = await fetcher.post<ApiResponse<{ message: string }>>(
+      `Project/updateDescription?taskId=${id}`,
+      data
+    );
+    return res.data.content;
+  } catch (error) {
+    console.error("Error fetching task:", error);
+    throw error;
+  }
+};
+
+export const updatePriority = async (id: number, data: Priority) => {
+  try {
+    const res = await fetcher.post<ApiResponse<{ message: string }>>(
+      `Project/updatePriority?taskId=${id}`,
       data
     );
     return res.data.content;

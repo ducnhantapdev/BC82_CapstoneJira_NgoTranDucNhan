@@ -295,62 +295,68 @@ export default function BoardMain({ project }: BoardMainProps) {
             px: 1,
           }}
         >
-          {taskDetails.lstTaskDeTail?.map((item, index) => (
-            <Box
-              key={item.taskId}
-              data-task-index={index}
-              sx={{
-                transform:
-                  hoveredIndex === index ? "translateY(8px)" : "translateY(0)",
-                transition: "all 0.2s ease",
-                position: "relative",
-                "&::before":
-                  hoveredIndex === index
-                    ? {
-                        content: '""',
-                        position: "absolute",
-                        top: "-4px",
-                        left: 0,
-                        right: 0,
-                        height: "3px",
-                        backgroundColor: "#1976d2",
-                        borderRadius: "2px",
-                        boxShadow: "0 2px 4px rgba(25, 118, 210, 0.3)",
-                      }
-                    : {},
-                "&::after":
-                  hoveredIndex === index
-                    ? {
-                        content: '""',
-                        position: "absolute",
-                        top: "-8px",
-                        left: "50%",
-                        transform: "translateX(-50%)",
-                        width: "0",
-                        height: "0",
-                        borderLeft: "6px solid transparent",
-                        borderRight: "6px solid transparent",
-                        borderBottom: "6px solid #1976d2",
-                      }
-                    : {},
-                // Hiệu ứng kéo ra khỏi column
-                "&:hover": {
-                  transform: "scale(1.02)",
-                  boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
-                  zIndex: 10,
-                },
-                // Hiệu ứng khi đang kéo task
-                "& .dragging": {
-                  transform: "rotate(5deg) scale(1.05)",
-                  boxShadow: "0 8px 16px rgba(0,0,0,0.3)",
-                  zIndex: 100,
-                  opacity: 0.8,
-                },
-              }}
-            >
-              <TaskCard props={{ ...item, statusId: taskDetails.statusId }} />
-            </Box>
-          ))}
+          {taskDetails.lstTaskDeTail?.map((item, index) => {
+            // Debug: Log task item data
+            console.log("Task item:", item);
+            return (
+              <Box
+                key={item.taskId}
+                data-task-index={index}
+                sx={{
+                  transform:
+                    hoveredIndex === index
+                      ? "translateY(8px)"
+                      : "translateY(0)",
+                  transition: "all 0.2s ease",
+                  position: "relative",
+                  "&::before":
+                    hoveredIndex === index
+                      ? {
+                          content: '""',
+                          position: "absolute",
+                          top: "-4px",
+                          left: 0,
+                          right: 0,
+                          height: "3px",
+                          backgroundColor: "#1976d2",
+                          borderRadius: "2px",
+                          boxShadow: "0 2px 4px rgba(25, 118, 210, 0.3)",
+                        }
+                      : {},
+                  "&::after":
+                    hoveredIndex === index
+                      ? {
+                          content: '""',
+                          position: "absolute",
+                          top: "-8px",
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          width: "0",
+                          height: "0",
+                          borderLeft: "6px solid transparent",
+                          borderRight: "6px solid transparent",
+                          borderBottom: "6px solid #1976d2",
+                        }
+                      : {},
+                  // Hiệu ứng kéo ra khỏi column
+                  "&:hover": {
+                    transform: "scale(1.02)",
+                    boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+                    zIndex: 10,
+                  },
+                  // Hiệu ứng khi đang kéo task
+                  "& .dragging": {
+                    transform: "rotate(5deg) scale(1.05)",
+                    boxShadow: "0 8px 16px rgba(0,0,0,0.3)",
+                    zIndex: 100,
+                    opacity: 0.8,
+                  },
+                }}
+              >
+                <TaskCard props={{ ...item, statusId: taskDetails.statusId }} />
+              </Box>
+            );
+          })}
 
           {/* Hiển thị drop zone khi hover ở cuối column */}
           {hoveredIndex === taskDetails.lstTaskDeTail?.length && (

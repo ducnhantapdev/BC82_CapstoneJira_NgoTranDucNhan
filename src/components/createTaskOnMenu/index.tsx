@@ -1,17 +1,7 @@
 import { useState, useEffect } from "react";
 
 import { PlusOutlined } from "@ant-design/icons";
-import {
-  Button,
-  Col,
-  Drawer,
-  Form,
-  Input,
-  Row,
-  Select,
-  Space,
-  message,
-} from "antd";
+import { Button, Col, Drawer, Form, Input, Row, Select, Space } from "antd";
 
 import TextArea from "antd/es/input/TextArea";
 import {
@@ -150,7 +140,7 @@ export default function CreateTaskOnMenu({
       await createTask(taskData);
 
       // Thông báo thành công
-      message.success("Tạo task thành công!");
+      toast.success("Tạo task thành công!");
 
       // Gọi callback để cập nhật giao diện
       if (onTaskCreated) {

@@ -32,6 +32,13 @@ export default function ProjectDetail() {
     };
   }, [id, dispatch]);
 
+  // Debug: Log current project data
+  useEffect(() => {
+    if (currentProject) {
+      console.log("Current project data:", currentProject);
+    }
+  }, [currentProject]);
+
   if (loading) {
     return <div>Đang tải...</div>;
   }
