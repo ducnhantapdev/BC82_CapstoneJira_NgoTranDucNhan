@@ -102,7 +102,6 @@ export default function Column({
         )}
       </Box>
 
-      {/* Footer */}
       {taskDetails.statusName === "BACKLOG" && !showInput && (
         <Box
           sx={{
