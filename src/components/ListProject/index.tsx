@@ -4,14 +4,19 @@ import { Avatar, AvatarGroup, Tooltip } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchProjects } from "../../redux/projectSlice";
+import { fetchUsers } from "../../redux/userSlice";
 import type { RootState, AppDispatch } from "../../redux/store";
 import CreateProjectModal from "../AppBar/menu/create-project-modal";
 import { type ProjectList } from "../../apis/projects";
+import { type User } from "../../apis/users";
 
 import { useNavigate } from "react-router-dom";
 import { Typography } from "@mui/material";
 import ActionMenu from "./action";
 import DeleteDialog from "./action/delete";
+import UserActionMenu from "../UserActionMenu";
+import EditUserForm from "../EditUserForm";
+import DeleteUserDialog from "../DeleteUserDialog";
 
 interface memberProps {
   userId: number;
@@ -22,13 +27,27 @@ interface memberProps {
 export default function ListProjects() {
   const [deleteId, setDeleteId] = useState<number>(0);
   const [openDelete, setOpenDelete] = useState(false);
+  const [deleteUserId, setDeleteUserId] = useState<number>(0);
+  const [openDeleteUser, setOpenDeleteUser] = useState(false);
+  const [editUser, setEditUser] = useState<User | null>(null);
+  const [openEditUser, setOpenEditUser] = useState(false);
 
-  const { list: allProjects, searchTerm } = useSelector(
+  const { list: allProjects, searchTerm: projectSearchTerm } = useSelector(
     (state: RootState) => state.projects
   );
 
+  const { list: allUsers, searchTerm: userSearchTerm } = useSelector(
+    (state: RootState) => state.users
+  );
+
+  const { currentView } = useSelector((state: RootState) => state.view);
+
   const filteredProjects = allProjects.filter((project) =>
-    project.projectName.toLowerCase().includes(searchTerm.toLowerCase())
+    project.projectName.toLowerCase().includes(projectSearchTerm.toLowerCase())
+  );
+
+  const filteredUsers = allUsers.filter((user) =>
+    user.name.toLowerCase().includes(userSearchTerm.toLowerCase())
   );
 
   const dispatch = useDispatch<AppDispatch>();
@@ -40,8 +59,12 @@ export default function ListProjects() {
   };
 
   useEffect(() => {
-    dispatch(fetchProjects());
-  }, [dispatch]);
+    if (currentView === "projects") {
+      dispatch(fetchProjects());
+    } else {
+      dispatch(fetchUsers());
+    }
+  }, [dispatch, currentView]);
 
   const onUpdate = (id: number) => {
     navigate(`/update-project/${id}`);
@@ -52,7 +75,17 @@ export default function ListProjects() {
     setOpenDelete(true);
   };
 
-  const columns: GridColDef<ProjectList>[] = [
+  const onEditUser = (user: User) => {
+    setEditUser(user);
+    setOpenEditUser(true);
+  };
+
+  const onDeleteUser = (userId: number) => {
+    setDeleteUserId(userId);
+    setOpenDeleteUser(true);
+  };
+
+  const projectColumns: GridColDef<ProjectList>[] = [
     { field: "id", headerName: "ID", width: 90 },
     {
       field: "projectName",
@@ -154,18 +187,62 @@ export default function ListProjects() {
     },
   ];
 
+  const userColumns: GridColDef<User>[] = [
+    { field: "userId", headerName: "ID", width: 90 },
+    {
+      field: "name",
+      headerName: "Name",
+      width: 200,
+      renderCell: (params) => (
+        <Box display="flex" alignItems="center" gap={1}>
+          <Avatar src={params.row.avatar} sx={{ width: 32, height: 32 }} />
+          <Typography variant="body2" fontWeight={500}>
+            {params.row.name}
+          </Typography>
+        </Box>
+      ),
+    },
+    {
+      field: "email",
+      headerName: "Email",
+      width: 250,
+    },
+    {
+      field: "phoneNumber",
+      headerName: "Phone Number",
+      width: 150,
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 100,
+      renderCell: (params) => (
+        <UserActionMenu
+          onEdit={() => onEditUser(params.row)}
+          onDelete={() => onDeleteUser(params.row.userId)}
+        />
+      ),
+    },
+  ];
+
   return (
     <>
       <div>
         <div id="list-header" className="flex justify-between items-center ">
-          <h1 className="font-bold text-2xl">Project</h1>
-          <CreateProjectModal />
+          <h1 className="font-bold text-2xl">
+            {currentView === "projects" ? "Projects" : "Users"}
+          </h1>
+          {currentView === "projects" && <CreateProjectModal />}
         </div>
         <div id="list-content" className="mt-10">
           <Box sx={{ height: "100%", width: "100%" }}>
             <DataGrid
-              rows={filteredProjects}
-              columns={columns}
+              rows={
+                currentView === "projects" ? filteredProjects : filteredUsers
+              }
+              columns={
+                currentView === "projects" ? projectColumns : userColumns
+              }
               initialState={{
                 pagination: {
                   paginationModel: {
@@ -176,15 +253,34 @@ export default function ListProjects() {
               pageSizeOptions={[5, 10, 25]}
               checkboxSelection
               disableRowSelectionOnClick
+              getRowId={(row: any) =>
+                currentView === "projects" ? row.id : row.userId
+              }
             />
           </Box>
         </div>
       </div>
-      <DeleteDialog
-        open={openDelete}
-        onClose={() => setOpenDelete(false)}
-        projectId={deleteId}
-        onDelete={() => void dispatch(fetchProjects())}
+      {currentView === "projects" && (
+        <DeleteDialog
+          open={openDelete}
+          onClose={() => setOpenDelete(false)}
+          projectId={deleteId}
+          onDelete={() => void dispatch(fetchProjects())}
+        />
+      )}
+
+      <EditUserForm
+        open={openEditUser}
+        onClose={() => setOpenEditUser(false)}
+        user={editUser}
+        onSuccess={() => void dispatch(fetchUsers())}
+      />
+
+      <DeleteUserDialog
+        open={openDeleteUser}
+        onClose={() => setOpenDeleteUser(false)}
+        user={allUsers.find((user) => user.userId === deleteUserId) || null}
+        onDelete={() => void dispatch(fetchUsers())}
       />
     </>
   );

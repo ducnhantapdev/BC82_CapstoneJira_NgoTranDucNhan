@@ -3,12 +3,15 @@ import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import UsersModal from "../../../UsersModal";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "../../../../redux/store";
+import { setCurrentView } from "../../../../redux/viewSlice";
+import { fetchUsers } from "../../../../redux/userSlice";
 
 export default function UsersMenu() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [openUsersModal, setOpenUsersModal] = React.useState(false);
   const open = Boolean(anchorEl);
+  const dispatch = useDispatch<AppDispatch>();
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -19,9 +22,11 @@ export default function UsersMenu() {
   };
 
   const handleViewAllUsers = () => {
-    setOpenUsersModal(true);
+    dispatch(setCurrentView("users"));
+    dispatch(fetchUsers());
     handleClose();
   };
+
   return (
     <div>
       <div>
@@ -48,11 +53,6 @@ export default function UsersMenu() {
           <MenuItem onClick={handleViewAllUsers}>View all users</MenuItem>
         </Menu>
       </div>
-
-      <UsersModal
-        open={openUsersModal}
-        onClose={() => setOpenUsersModal(false)}
-      />
     </div>
   );
 }

@@ -5,7 +5,8 @@ import { useNavigate } from "react-router-dom";
 
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../redux/store";
-import { setSearchTerm } from "../../redux/projectSlice";
+import { setSearchTerm as setProjectSearchTerm } from "../../redux/projectSlice";
+import { setSearchTerm as setUserSearchTerm } from "../../redux/userSlice";
 import theme from "../../theme";
 
 import CreateTaskOnMenu from "../createTaskOnMenu";
@@ -17,8 +18,12 @@ import AccoutMenu from "./menu/account-menu";
 
 export default function AppBar() {
   const dispatch = useDispatch<AppDispatch>();
-  const searchText = useSelector(
+  const { currentView } = useSelector((state: RootState) => state.view);
+  const projectSearchText = useSelector(
     (state: RootState) => state.projects.searchTerm
+  );
+  const userSearchText = useSelector(
+    (state: RootState) => state.users.searchTerm
   );
   const navigate = useNavigate();
   return (
@@ -57,9 +62,20 @@ export default function AppBar() {
           </div>
           <div className="flex gap-2 items-center">
             <SearchBox
-              value={searchText}
+              value={
+                currentView === "projects" ? projectSearchText : userSearchText
+              }
+              placeholder={
+                currentView === "projects"
+                  ? "Tìm kiếm project..."
+                  : "Tìm kiếm user..."
+              }
               onChange={(value: string) => {
-                dispatch(setSearchTerm(value));
+                if (currentView === "projects") {
+                  dispatch(setProjectSearchTerm(value));
+                } else {
+                  dispatch(setUserSearchTerm(value));
+                }
               }}
             />
             <SettingMenu />

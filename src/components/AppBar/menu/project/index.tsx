@@ -6,10 +6,13 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "../../../../redux/store";
 import { fetchProjects } from "../../../../redux/projectSlice";
+import { setCurrentView } from "../../../../redux/viewSlice";
 
 export default function ProjectsMenu() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const dispatch = useDispatch<AppDispatch>();
+
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -17,11 +20,12 @@ export default function ProjectsMenu() {
     setAnchorEl(null);
   };
 
-  const dispath = useDispatch<AppDispatch>();
-
   const handleViewAllProject = () => {
-    dispath(fetchProjects());
+    dispatch(setCurrentView("projects"));
+    dispatch(fetchProjects());
+    handleClose();
   };
+
   return (
     <div>
       <div>
