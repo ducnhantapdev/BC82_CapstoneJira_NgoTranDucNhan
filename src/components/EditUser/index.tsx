@@ -65,8 +65,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
     },
   });
 
-  const onSubmit: SubmitHandler<FormData> = (data) => {
-    console.log("Submitted Data:", data);
+  const onSubmit: SubmitHandler<FormData> = () => {
     onClose();
   };
 
