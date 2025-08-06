@@ -2,6 +2,7 @@ import { useRoutes } from "react-router-dom";
 import { PATH } from "./path";
 
 import Login from "../components/formLogin";
+import Register from "../pages/auth/register";
 
 import Home from "../pages/home";
 
@@ -24,6 +25,10 @@ const useRouterElements = () => {
     {
       path: PATH.LOGIN,
       element: <Login />,
+    },
+    {
+      path: PATH.REGISTER,
+      element: <Register />,
     },
     {
       path: PATH.CREATE_PROJECT,

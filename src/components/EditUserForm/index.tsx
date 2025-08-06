@@ -20,6 +20,13 @@ interface EditUserFormProps {
   onSuccess: () => void;
 }
 
+interface FormErrors {
+  name?: string;
+  email?: string;
+  phoneNumber?: string;
+  passWord?: string;
+}
+
 export default function EditUserForm({
   open,
   onClose,
@@ -33,30 +40,115 @@ export default function EditUserForm({
     name: "",
     phoneNumber: "",
   });
+  const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({
     open: false,
     message: "",
     severity: "success" as "success" | "error",
   });
+  const [isOwnAccount, setIsOwnAccount] = useState(true);
+
+  // Validation functions
+  const validateName = (name: string): string | undefined => {
+    if (!name.trim()) {
+      return "Tên không được để trống";
+    }
+    if (name.trim().length < 2) {
+      return "Tên phải có ít nhất 2 ký tự";
+    }
+    return undefined;
+  };
+
+  const validateEmail = (email: string): string | undefined => {
+    if (!email.trim()) {
+      return "Email không được để trống";
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return "Email không đúng định dạng";
+    }
+    return undefined;
+  };
+
+  const validatePhoneNumber = (phone: string): string | undefined => {
+    if (!phone.trim()) {
+      return "Số điện thoại không được để trống";
+    }
+    // Regex cho số điện thoại Việt Nam
+    const phoneRegex = /^(0|\+84)(3[2-9]|5[689]|7[06-9]|8[1-689]|9[0-46-9])[0-9]{7}$/;
+    if (!phoneRegex.test(phone)) {
+      return "Số điện thoại không đúng định dạng Việt Nam";
+    }
+    return undefined;
+  };
+
+  const validatePassword = (password: string): string | undefined => {
+    if (password && password.length < 6) {
+      return "Mật khẩu phải có ít nhất 6 ký tự";
+    }
+    return undefined;
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+    
+    newErrors.name = validateName(formData.name);
+    newErrors.email = validateEmail(formData.email);
+    newErrors.phoneNumber = validatePhoneNumber(formData.phoneNumber);
+    newErrors.passWord = validatePassword(formData.passWord);
+
+    setErrors(newErrors);
+    
+    // Return true if no errors
+    return !Object.values(newErrors).some(error => error !== undefined);
+  };
 
   useEffect(() => {
     if (user) {
       setFormData({
         id: user.userId.toString(),
-        passWord: "", // Không hiển thị password
+        passWord: "", 
         email: user.email,
         name: user.name,
         phoneNumber: user.phoneNumber,
       });
+      setErrors({}); 
+      // Kiểm tra user hiện tại có phải là user đang được chỉnh sửa không
+      const currentUserStr = localStorage.getItem("user");
+      if (currentUserStr) {
+        try {
+          const currentUser = JSON.parse(currentUserStr);
+          console.log("Current user from localStorage:", currentUser);
+          console.log("User being edited:", user);
+        
+          const currentUserId = currentUser.userId;
+          const editingUserId = user.userId;
+          console.log("Current user ID:", currentUserId, "Editing user ID:", editingUserId);
+          setIsOwnAccount(currentUserId === editingUserId);
+        } catch (error) {
+          console.error("Error parsing user from localStorage:", error);
+          setIsOwnAccount(false);
+        }
+      } else {
+        console.log("No user found in localStorage");
+        setIsOwnAccount(false);
+      }
     }
   }, [user]);
 
   const handleChange =
     (field: keyof editUser) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value;
       setFormData((prev) => ({
         ...prev,
-        [field]: event.target.value,
+        [field]: value,
+      }));
+      
+      // Clear error for this field when user starts typing
+      setErrors(prev => ({
+        ...prev,
+        [field]: undefined
       }));
     };
 
@@ -64,9 +156,50 @@ export default function EditUserForm({
     event.preventDefault();
     if (!user) return;
 
+    // Validate form before submission
+    if (!validateForm()) {
+      setToast({
+        open: true,
+        message: "Vui lòng kiểm tra lại thông tin!",
+        severity: "error",
+      });
+      return;
+    }
+
+    // Kiểm tra lại trước khi update
+    const currentUserStr = localStorage.getItem("user");
+    if (currentUserStr) {
+      try {
+        const currentUser = JSON.parse(currentUserStr);
+        const currentUserId = currentUser.userId || currentUser.id || currentUser.user_id;
+        if (currentUserId !== user.userId) {
+          setToast({
+            open: true,
+            message: "Bạn chỉ có thể chỉnh sửa tài khoản của chính mình!",
+            severity: "error",
+          });
+          return;
+        }
+      } catch (error) {
+        setToast({
+          open: true,
+          message: "Có lỗi xảy ra khi kiểm tra quyền!",
+          severity: "error",
+        });
+        return;
+      }
+    }
+
+    // Nếu mật khẩu để trống, giữ nguyên mật khẩu cũ
+    let dataToUpdate = { ...formData };
+    if (!formData.passWord) {
+
+      dataToUpdate.passWord = (user as any).passWord || (user as any).password || undefined;
+    }
+
     try {
       setLoading(true);
-      await updateUser(user.userId, formData);
+      await updateUser(user.userId, dataToUpdate);
       setToast({
         open: true,
         message: "Cập nhật thông tin user thành công!",
@@ -94,6 +227,7 @@ export default function EditUserForm({
       name: "",
       phoneNumber: "",
     });
+    setErrors({});
     onClose();
   };
 
@@ -110,6 +244,11 @@ export default function EditUserForm({
                   <Typography variant="h6">{user.name}</Typography>
                 </Box>
               )}
+              {!isOwnAccount && (
+                <Typography color="error" variant="body2">
+                  Bạn chỉ có thể chỉnh sửa tài khoản của chính mình.
+                </Typography>
+              )}
 
               <TextField
                 label="Name"
@@ -117,6 +256,8 @@ export default function EditUserForm({
                 onChange={handleChange("name")}
                 fullWidth
                 required
+                error={!!errors.name}
+                helperText={errors.name}
               />
 
               <TextField
@@ -126,6 +267,8 @@ export default function EditUserForm({
                 onChange={handleChange("email")}
                 fullWidth
                 required
+                error={!!errors.email}
+                helperText={errors.email}
               />
 
               <TextField
@@ -134,6 +277,8 @@ export default function EditUserForm({
                 onChange={handleChange("phoneNumber")}
                 fullWidth
                 required
+                error={!!errors.phoneNumber}
+                helperText={errors.phoneNumber}
               />
 
               <TextField
@@ -143,6 +288,8 @@ export default function EditUserForm({
                 onChange={handleChange("passWord")}
                 fullWidth
                 placeholder="Enter new password (leave blank to keep current)"
+                error={!!errors.passWord}
+                helperText={errors.passWord}
               />
             </Box>
           </DialogContent>
@@ -150,7 +297,7 @@ export default function EditUserForm({
             <Button onClick={handleClose} disabled={loading}>
               Cancel
             </Button>
-            <Button type="submit" variant="contained" disabled={loading}>
+            <Button type="submit" variant="contained" disabled={loading || !isOwnAccount}>
               {loading ? "Updating..." : "Update User"}
             </Button>
           </DialogActions>

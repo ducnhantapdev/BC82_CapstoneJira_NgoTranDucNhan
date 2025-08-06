@@ -24,6 +24,13 @@ export interface editUser {
   phoneNumber: string;
 }
 
+export interface registerUser {
+  email: string;
+  passWord: string;
+  name: string;
+  phoneNumber: string;
+}
+
 export const getUsersAPI = async () => {
   try {
     const res = await fetcher.get<ApiResponse<User[]>>("Users/getUser");
@@ -67,6 +74,19 @@ export const deleteUser = async (id: number) => {
     return res.data.content;
   } catch (error) {
     console.error("Error deleting user:", error);
+    throw error;
+  }
+};
+
+export const registerUserAPI = async (data: registerUser) => {
+  try {
+    const res = await fetcher.post<ApiResponse<{ message: string }>>(
+      "Users/signup",
+      data
+    );
+    return res.data.content;
+  } catch (error) {
+    console.error("Error registering user:", error);
     throw error;
   }
 };

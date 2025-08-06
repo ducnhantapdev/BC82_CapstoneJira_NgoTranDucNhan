@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -31,9 +31,59 @@ export default function DeleteUserDialog({
     message: "",
     severity: "success" as "success" | "error",
   });
+  const [isOwnAccount, setIsOwnAccount] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      // Kiểm tra user hiện tại có phải là user đang được xóa không
+      const currentUserStr = localStorage.getItem("user");
+      if (currentUserStr) {
+        try {
+          const currentUser = JSON.parse(currentUserStr);
+          console.log("Current user from localStorage (delete):", currentUser);
+          console.log("User being deleted:", user);
+          // Kiểm tra nhiều trường có thể chứa id
+          const currentUserId = currentUser.userId || currentUser.id || currentUser.user_id;
+          const deletingUserId = user.userId;
+          console.log("Current user ID (delete):", currentUserId, "Deleting user ID:", deletingUserId);
+          setIsOwnAccount(currentUserId === deletingUserId);
+        } catch (error) {
+          console.error("Error parsing user from localStorage (delete):", error);
+          setIsOwnAccount(false);
+        }
+      } else {
+        console.log("No user found in localStorage (delete)");
+        setIsOwnAccount(false);
+      }
+    }
+  }, [user]);
 
   const handleDelete = async () => {
     if (!user) return;
+
+    // Kiểm tra lại trước khi xóa
+    const currentUserStr = localStorage.getItem("user");
+    if (currentUserStr) {
+      try {
+        const currentUser = JSON.parse(currentUserStr);
+        const currentUserId = currentUser.userId || currentUser.id || currentUser.user_id;
+        if (currentUserId !== user.userId) {
+          setToast({
+            open: true,
+            message: "Bạn chỉ có thể xóa tài khoản của chính mình!",
+            severity: "error",
+          });
+          return;
+        }
+      } catch (error) {
+        setToast({
+          open: true,
+          message: "Có lỗi xảy ra khi kiểm tra quyền!",
+          severity: "error",
+        });
+        return;
+      }
+    }
 
     try {
       setLoading(true);
@@ -77,6 +127,11 @@ export default function DeleteUserDialog({
               )}
             </Box>
           </Box>
+          {!isOwnAccount && (
+            <Typography color="error" variant="body2" sx={{ mb: 2 }}>
+              Bạn chỉ có thể xóa tài khoản của chính mình.
+            </Typography>
+          )}
           <Typography variant="body2" color="error">
             This action cannot be undone.
           </Typography>
@@ -89,7 +144,7 @@ export default function DeleteUserDialog({
             onClick={handleDelete}
             color="error"
             variant="contained"
-            disabled={loading}
+            disabled={loading || !isOwnAccount}
           >
             {loading ? "Deleting..." : "Delete User"}
           </Button>
