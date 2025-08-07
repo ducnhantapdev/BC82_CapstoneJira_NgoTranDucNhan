@@ -1,5 +1,8 @@
 import { Typography, Avatar, AvatarGroup, Tooltip } from "@mui/material";
 import type { ProjectUpdate } from "../../../apis/projects";
+import AddIcon from '@mui/icons-material/Add';
+import { useState } from "react";
+import AddmemberModal from "../../create-project/add-member";
 
 interface Member {
   userId?: number;
@@ -10,9 +13,24 @@ interface Member {
 
 interface BoardHeaderProps {
   project: ProjectUpdate | null;
+  onProjectUpdate?: () => void;
 }
 
-export default function BoardHeader({ project }: BoardHeaderProps) {
+export default function BoardHeader({ project, onProjectUpdate }: BoardHeaderProps) {
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+
+  const handleAddMemberClick = () => {
+    setIsAddMemberModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsAddMemberModalOpen(false);
+    // Refresh project data when modal is closed
+    if (onProjectUpdate) {
+      onProjectUpdate();
+    }
+  };
+
   return (
     <div>
       <div className="board-header flex justify-start items-center gap-2 pb-5">
@@ -55,8 +73,23 @@ export default function BoardHeader({ project }: BoardHeaderProps) {
               Chưa có thành viên
             </Typography>
           )}
+          <Avatar
+            sx={{
+              backgroundColor: "primary.main",
+              cursor: "pointer",
+            }}
+            onClick={handleAddMemberClick}
+          >
+            <AddIcon />
+          </Avatar>
         </div>
       </div>
+      
+      <AddmemberModal
+        open={isAddMemberModalOpen}
+        onClose={handleCloseModal}
+        projectId={project?.id || 0}
+      />
     </div>
   );
 }

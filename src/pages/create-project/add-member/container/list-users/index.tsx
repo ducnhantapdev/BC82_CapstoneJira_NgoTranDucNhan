@@ -3,11 +3,13 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import { useEffect, useState } from "react";
-import { getUserById, getUsersAPI, type User } from "../../../../../apis/users";
+import { getUsersAPI, type User } from "../../../../../apis/users";
 import {
   assignUserProject,
   removeUserFromProject,
+  getProjectDetailById,
 } from "../../../../../apis/projects";
+import { toast } from "react-toastify";
 
 interface projectIdParam {
   projectId: number;
@@ -41,6 +43,11 @@ export default function AddUsersToProject(projectId: projectIdParam) {
     getProjectUsers();
   }, []);
 
+  // Debug: Log addedUsers whenever it changes
+  useEffect(() => {
+    console.log("Added users updated:", addedUsers);
+  }, [addedUsers]);
+
   const getUser = async () => {
     try {
       const listUser = await getUsersAPI();
@@ -52,10 +59,24 @@ export default function AddUsersToProject(projectId: projectIdParam) {
 
   const getProjectUsers = async () => {
     try {
-      const projectUsers = await getUserById(id);
-      setAddedUsers(projectUsers || []);
+      const projectDetail = await getProjectDetailById(id);
+      console.log("Project detail response:", projectDetail);
+      if (projectDetail && projectDetail.members) {
+        // Convert members to User format, handling both name and userName properties
+        const convertedMembers = projectDetail.members.map((member: any) => ({
+          userId: member.userId,
+          name: member.name || member.userName || '',
+          avatar: member.avatar || '',
+          email: member.email || '',
+          phoneNumber: member.phoneNumber || ''
+        }));
+        setAddedUsers(convertedMembers);
+      } else {
+        setAddedUsers([]);
+      }
     } catch (error) {
-      console.log("error", error);
+      console.log("Error fetching project users:", error);
+      setAddedUsers([]);
     }
   };
 
@@ -66,12 +87,15 @@ export default function AddUsersToProject(projectId: projectIdParam) {
         userId: userId,
       });
 
-      const userToAdd = listUsers.find((user) => user.userId === userId);
-      if (userToAdd) {
-        setAddedUsers((prev) => [...prev, userToAdd]);
-        setListUser((prev) => prev.filter((user) => user.userId !== userId));
-      }
+      // Refresh the project users list after successful assignment
+      await getProjectUsers();
+      
+      // Remove the user from the available users list
+      setListUser((prev) => prev.filter((user) => user.userId !== userId));
+      
+      toast.success("Thêm thành viên thành công!");
     } catch (error) {
+      toast.error("Thêm thành viên thất bại!");
       console.log(error);
     }
   };
@@ -86,12 +110,18 @@ export default function AddUsersToProject(projectId: projectIdParam) {
         userId: userId,
       });
 
+      // Refresh the project users list after successful removal
+      await getProjectUsers();
+      
+      // Add the user back to the available users list
       const userToRemove = addedUsers.find((user) => user.userId === userId);
       if (userToRemove) {
         setListUser((prev) => [...prev, userToRemove]);
-        setAddedUsers((prev) => prev.filter((user) => user.userId !== userId));
       }
+      
+      toast.success("Xóa thành viên thành công!");
     } catch (error) {
+      toast.error("Xóa thành viên thất bại!");
       console.log(error);
     }
   };

@@ -22,6 +22,12 @@ export default function ProjectDetail() {
     (state: RootState) => state.projects
   );
 
+  const refreshProjectData = () => {
+    if (id) {
+      dispatch(fetchProjectDetail(parseInt(id)));
+    }
+  };
+
   useEffect(() => {
     if (id) {
       dispatch(fetchProjectDetail(parseInt(id)));
@@ -55,7 +61,7 @@ export default function ProjectDetail() {
             height: BOARD_CONTENT_HEIGHT,
           }}
         >
-          <BoardHeader project={currentProject} />
+          <BoardHeader project={currentProject} onProjectUpdate={refreshProjectData} />
 
           <Box
             sx={{

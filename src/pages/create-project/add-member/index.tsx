@@ -1,7 +1,6 @@
 import { Modal } from "antd";
 import AddUsersToProject from "./container/list-users";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+
 
 interface OpenProps {
   open: boolean;
@@ -10,14 +9,8 @@ interface OpenProps {
 }
 
 const AddmemberModal: React.FC<OpenProps> = ({ open, onClose, projectId }) => {
-  const navigate = useNavigate();
-
   const handleOk = () => {
-    toast.success("Thêm thành viên thành công!");
     onClose();
-    setTimeout(() => {
-      navigate("/");
-    }, 800); // Đợi toast hiển thị ngắn rồi chuyển trang
   };
 
   return (
