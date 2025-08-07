@@ -7,7 +7,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import { PATH } from "../../routes/path";
-import { Typography } from "@mui/material";
+
 import { Link } from "react-router-dom";
 
 type LoginForm = {
@@ -51,7 +51,7 @@ export default function Login() {
       toast.success("Đăng nhập thành công");
       console.log(response.content);
       localStorage.setItem("user", JSON.stringify(response.content));
-      navigate(PATH.HOME); 
+      navigate(PATH.HOME);
     } catch (error) {
       toast.error("Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin!");
       console.error("Lỗi đăng nhập:", error);
@@ -72,7 +72,9 @@ export default function Login() {
               className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {errors.email && (
-              <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -102,7 +104,7 @@ export default function Login() {
         <div className="mt-6 text-center">
           <p className="text-gray-600">
             Chưa có tài khoản?{" "}
-            <Link 
+            <Link
               to={PATH.REGISTER}
               className="text-blue-500 hover:text-blue-600 font-medium"
             >

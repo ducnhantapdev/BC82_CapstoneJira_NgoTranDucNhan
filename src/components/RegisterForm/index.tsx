@@ -68,31 +68,30 @@ export default function RegisterForm() {
         passWord: data.password,
         name: data.name,
         phoneNumber: data.phoneNumber,
-      })) as RegisterResponse;
-      
+      })) as unknown as RegisterResponse;
+
       toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
       console.log("Đăng ký thành công:", response);
-      
+
       // Reset form
       reset();
-      
+
       // Chuyển về trang đăng nhập sau 2 giây
       setTimeout(() => {
         navigate(PATH.LOGIN);
       }, 2000);
-      
     } catch (error: any) {
       console.error("Lỗi đăng ký:", error);
-      
+
       // Xử lý lỗi từ API
       let errorMessage = "Đăng ký thất bại. Vui lòng thử lại!";
-      
+
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
+
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -106,8 +105,10 @@ export default function RegisterForm() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Đăng ký tài khoản</h2>
-        
+        <h2 className="text-2xl font-bold mb-6 text-center">
+          Đăng ký tài khoản
+        </h2>
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Họ tên */}
           <div>
@@ -131,7 +132,9 @@ export default function RegisterForm() {
               className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {errors.email && (
-              <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -144,7 +147,9 @@ export default function RegisterForm() {
               className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {errors.phoneNumber && (
-              <p className="text-red-500 text-sm mt-1">{errors.phoneNumber.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.phoneNumber.message}
+              </p>
             )}
           </div>
 
@@ -157,7 +162,9 @@ export default function RegisterForm() {
               className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {errors.password && (
-              <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
@@ -170,7 +177,9 @@ export default function RegisterForm() {
               className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {errors.confirmPassword && (
-              <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.confirmPassword.message}
+              </p>
             )}
           </div>
 
@@ -197,7 +206,7 @@ export default function RegisterForm() {
           </p>
         </div>
       </div>
-      
+
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -211,4 +220,4 @@ export default function RegisterForm() {
       />
     </div>
   );
-} 
+}
