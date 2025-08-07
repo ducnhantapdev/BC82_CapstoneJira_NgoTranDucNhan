@@ -5,24 +5,57 @@ import AddCardIcon from "@mui/icons-material/AddCard";
 import { useRef, useEffect, useState, useCallback } from "react";
 
 import TaskCard from "../../../components/taskCard";
-import type { ProjectUpdate, Task, TaskDetail } from "../../../apis/projects";
-import { updateStatus } from "../../../apis/projects";
+import TaskInput from "../../../components/TaskInput";
+import type { ProjectUpdate, Task, TaskDetail, CreateTask } from "../../../apis/projects";
+import { updateStatus, createTask } from "../../../apis/projects";
+import { toast } from "react-toastify";
 
 interface BoardMainProps {
   project: ProjectUpdate | null;
+  onProjectUpdate?: () => void;
 }
 
 const COLUMN_HEADER = "50px";
-const COLUMN_FOOTER = "58px";
+const COLUMN_FOOTER = "60px";
 
-export default function BoardMain({ project }: BoardMainProps) {
+export default function BoardMain({ project, onProjectUpdate }: BoardMainProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [localProject, setLocalProject] = useState(project);
+  const [showTaskInput, setShowTaskInput] = useState(false);
 
   // Cập nhật local state khi project prop thay đổi
   useEffect(() => {
     setLocalProject(project);
   }, [project]);
+
+  const handleCreateTask = async (taskName: string, description: string, typeId: number, priorityId: number) => {
+    if (!localProject) return;
+
+    try {
+      const taskData: CreateTask = {
+        taskName,
+        description,
+        projectId: localProject.id,
+        typeId,
+        priorityId,
+        statusId: 1, // BACKLOG status
+        listUserAsign: []
+      };
+
+      await createTask(taskData);
+      toast.success("Tạo task thành công!");
+      
+      // Refresh project data to get the new task
+      if (onProjectUpdate) {
+        onProjectUpdate();
+      }
+      
+      setShowTaskInput(false);
+    } catch (error) {
+      toast.error("Tạo task thất bại!");
+      console.error("Error creating task:", error);
+    }
+  };
 
   const handleTaskUpdate = useCallback(
     async (
@@ -67,6 +100,7 @@ export default function BoardMain({ project }: BoardMainProps) {
           } else if (task.statusId === newStatusId) {
             // Thêm task vào column mới tại vị trí drop
             const currentTasks = task.lstTaskDeTail || [];
+    
             // Điều chỉnh index nếu task được thêm vào column khác
             const adjustedIndex =
               draggedItem.statusId !== newStatusId ? dropIndex : dropIndex;
@@ -145,7 +179,7 @@ export default function BoardMain({ project }: BoardMainProps) {
 
           // Logic cải tiến cho việc kéo thả - chỉ chèn khi kéo cao hơn task hiện có
           if (draggedItem.statusId !== taskDetails.statusId) {
-            // Kéo từ column khác sang column mới
+    
             for (let i = 0; i < taskElements.length; i++) {
               const element = taskElements[i] as HTMLElement;
               const rect = element.getBoundingClientRect();
@@ -329,7 +363,7 @@ export default function BoardMain({ project }: BoardMainProps) {
                           position: "absolute",
                           top: "-8px",
                           left: "50%",
-                          transform: "translateX(-50%)",
+                         
                           width: "0",
                           height: "0",
                           borderLeft: "6px solid transparent",
@@ -398,7 +432,21 @@ export default function BoardMain({ project }: BoardMainProps) {
               justifyContent: "space-between",
             }}
           >
-            <Button startIcon={<AddCardIcon />}>Add new task</Button>
+            {!showTaskInput ? (
+              <Button 
+                startIcon={<AddCardIcon />} 
+                onClick={() => setShowTaskInput(true)}
+                fullWidth
+              >
+                Add new task
+              </Button>
+            ) : (
+              <TaskInput
+                onSave={handleCreateTask}
+                onCancel={() => setShowTaskInput(false)}
+                projectId={localProject?.id || 0}
+              />
+            )}
           </Box>
         )}
       </Box>

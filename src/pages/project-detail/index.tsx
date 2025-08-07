@@ -72,7 +72,7 @@ export default function ProjectDetail() {
             }}
           >
             {/* Column 1*/}
-            <BoardMain project={currentProject} />
+            <BoardMain project={currentProject} onProjectUpdate={refreshProjectData} />
           </Box>
         </Box>
       </div>
