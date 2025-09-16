@@ -1,9 +1,22 @@
-import { Box, TextField, Button, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
+import {
+  Box,
+  TextField,
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+} from "@mui/material";
 import { useState, useEffect } from "react";
 import { getAllTaskType, getAllPriority } from "../../apis/projects";
 
 interface TaskInputProps {
-  onSave: (taskName: string, description: string, typeId: number, priorityId: number) => void;
+  onSave: (
+    taskName: string,
+    description: string,
+    typeId: number,
+    priorityId: number
+  ) => void;
   onCancel: () => void;
   projectId: number;
 }
@@ -18,7 +31,7 @@ interface Priority {
   priority: string;
 }
 
-export default function TaskInput({ onSave, onCancel, projectId }: TaskInputProps) {
+export default function TaskInput({ onSave, onCancel }: TaskInputProps) {
   const [taskName, setTaskName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedTypeId, setSelectedTypeId] = useState<number>(1);
@@ -32,7 +45,7 @@ export default function TaskInput({ onSave, onCancel, projectId }: TaskInputProp
       try {
         const [typesData, prioritiesData] = await Promise.all([
           getAllTaskType(),
-          getAllPriority()
+          getAllPriority(),
         ]);
         // Cast the response data to the correct types
         setTaskTypes(typesData as any);
@@ -48,7 +61,12 @@ export default function TaskInput({ onSave, onCancel, projectId }: TaskInputProp
     if (taskName.trim()) {
       setLoading(true);
       try {
-        await onSave(taskName.trim(), description.trim(), selectedTypeId, selectedPriorityId);
+        await onSave(
+          taskName.trim(),
+          description.trim(),
+          selectedTypeId,
+          selectedPriorityId
+        );
         setTaskName("");
         setDescription("");
         setSelectedTypeId(1);
@@ -143,9 +161,9 @@ export default function TaskInput({ onSave, onCancel, projectId }: TaskInputProp
         >
           {loading ? "Đang tạo..." : "Tạo task"}
         </Button>
-        <Button 
-          variant="outlined" 
-          size="small" 
+        <Button
+          variant="outlined"
+          size="small"
           onClick={handleCancel}
           disabled={loading}
         >

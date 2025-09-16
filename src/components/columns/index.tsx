@@ -18,6 +18,7 @@ interface ColumnProps {
 
 export default function Column({
   taskDetails,
+  projectId,
 
   onTaskMoved,
 }: ColumnProps) {
@@ -95,6 +96,7 @@ export default function Column({
         {taskDetails.statusName === "BACKLOG" && showInput && (
           <div ref={inputRef}>
             <TaskInput
+              projectId={projectId}
               onSave={() => setShowInput(false)}
               onCancel={() => setShowInput(false)}
             />
