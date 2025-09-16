@@ -27,7 +27,7 @@ interface BoardMainProps {
 }
 
 const COLUMN_HEADER = "50px";
-const COLUMN_FOOTER = "58px";
+const COLUMN_FOOTER = "60px";
 
 export default function BoardMain({ project }: BoardMainProps) {
   const [isUpdating, setIsUpdating] = useState(false);
@@ -81,6 +81,7 @@ export default function BoardMain({ project }: BoardMainProps) {
           } else if (task.statusId === newStatusId) {
             // Thêm task vào column mới tại vị trí drop
             const currentTasks = task.lstTaskDeTail || [];
+
             // Điều chỉnh index nếu task được thêm vào column khác
             const adjustedIndex =
               draggedItem.statusId !== newStatusId ? dropIndex : dropIndex;
@@ -182,7 +183,6 @@ export default function BoardMain({ project }: BoardMainProps) {
 
           // Logic cải tiến cho việc kéo thả - chỉ chèn khi kéo cao hơn task hiện có
           if (draggedItem.statusId !== taskDetails.statusId) {
-            // Kéo từ column khác sang column mới
             for (let i = 0; i < taskElements.length; i++) {
               const element = taskElements[i] as HTMLElement;
               const rect = element.getBoundingClientRect();
@@ -366,7 +366,7 @@ export default function BoardMain({ project }: BoardMainProps) {
                           position: "absolute",
                           top: "-8px",
                           left: "50%",
-                          transform: "translateX(-50%)",
+
                           width: "0",
                           height: "0",
                           borderLeft: "6px solid transparent",

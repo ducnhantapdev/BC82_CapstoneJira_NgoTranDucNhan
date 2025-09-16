@@ -106,15 +106,15 @@ export interface TaskType {
 }
 
 export interface CreateTask {
-  listUserAsign: number[];
+  listUserAsign?: number[];
   taskName: string;
-  description: string;
-  statusId: number;
+  description?: string;
+  statusId?: number;
   originalEstimate?: number;
   timeTrackingSpent?: number;
   timeTrackingRemaining?: number;
-  projectId: number;
-  typeId: number;
+  projectId?: number;
+  typeId?: number;
   priorityId: number;
 }
 
