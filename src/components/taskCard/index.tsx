@@ -161,7 +161,6 @@ const TaskCard = ({ props }: PropsFromBoardMain) => {
                 </Tooltip>
               ))}
 
-              {/* Show +N if there are more than 3 assignees */}
               {props.assigness && props.assigness.length > 3 && (
                 <Tooltip
                   title={`${props.assigness.length - 3} more assignees`}
