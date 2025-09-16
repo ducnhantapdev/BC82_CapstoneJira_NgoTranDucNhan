@@ -89,7 +89,6 @@ export default function CreateTaskOnMenu({
     fetchData();
   }, []);
 
-  // Khi chọn project, lấy chi tiết project để có danh sách members
   useEffect(() => {
     const fetchProjectDetail = async () => {
       if (selectedProject) {
@@ -139,7 +138,6 @@ export default function CreateTaskOnMenu({
 
       await createTask(taskData);
 
-      // Thông báo thành công
       toast.success("Tạo task thành công!");
 
       // Gọi callback để cập nhật giao diện
@@ -147,12 +145,10 @@ export default function CreateTaskOnMenu({
         onTaskCreated();
       }
 
-      // Đóng drawer và reset form
       onClose();
     } catch (error: unknown) {
       console.error("Lỗi tạo task:", error);
 
-      // Hiển thị thông báo lỗi chi tiết
       const errorMessage =
         (error as ApiError)?.response?.data?.content ||
         (error as ApiError)?.content ||

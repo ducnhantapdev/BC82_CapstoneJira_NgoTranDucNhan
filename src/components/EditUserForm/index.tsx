@@ -76,7 +76,8 @@ export default function EditUserForm({
       return "Số điện thoại không được để trống";
     }
     // Regex cho số điện thoại Việt Nam
-    const phoneRegex = /^(0|\+84)(3[2-9]|5[689]|7[06-9]|8[1-689]|9[0-46-9])[0-9]{7}$/;
+    const phoneRegex =
+      /^(0|\+84)(3[2-9]|5[689]|7[06-9]|8[1-689]|9[0-46-9])[0-9]{7}$/;
     if (!phoneRegex.test(phone)) {
       return "Số điện thoại không đúng định dạng Việt Nam";
     }
@@ -92,28 +93,28 @@ export default function EditUserForm({
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
-    
+
     newErrors.name = validateName(formData.name);
     newErrors.email = validateEmail(formData.email);
     newErrors.phoneNumber = validatePhoneNumber(formData.phoneNumber);
     newErrors.passWord = validatePassword(formData.passWord);
 
     setErrors(newErrors);
-    
+
     // Return true if no errors
-    return !Object.values(newErrors).some(error => error !== undefined);
+    return !Object.values(newErrors).some((error) => error !== undefined);
   };
 
   useEffect(() => {
     if (user) {
       setFormData({
         id: user.userId.toString(),
-        passWord: "", 
+        passWord: "",
         email: user.email,
         name: user.name,
         phoneNumber: user.phoneNumber,
       });
-      setErrors({}); 
+      setErrors({});
       // Kiểm tra user hiện tại có phải là user đang được chỉnh sửa không
       const currentUserStr = localStorage.getItem("user");
       if (currentUserStr) {
@@ -121,10 +122,15 @@ export default function EditUserForm({
           const currentUser = JSON.parse(currentUserStr);
           console.log("Current user from localStorage:", currentUser);
           console.log("User being edited:", user);
-        
+
           const currentUserId = currentUser.userId;
           const editingUserId = user.userId;
-          console.log("Current user ID:", currentUserId, "Editing user ID:", editingUserId);
+          console.log(
+            "Current user ID:",
+            currentUserId,
+            "Editing user ID:",
+            editingUserId
+          );
           setIsOwnAccount(currentUserId === editingUserId);
         } catch (error) {
           console.error("Error parsing user from localStorage:", error);
@@ -144,11 +150,11 @@ export default function EditUserForm({
         ...prev,
         [field]: value,
       }));
-      
+
       // Clear error for this field when user starts typing
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [field]: undefined
+        [field]: undefined,
       }));
     };
 
@@ -171,7 +177,8 @@ export default function EditUserForm({
     if (currentUserStr) {
       try {
         const currentUser = JSON.parse(currentUserStr);
-        const currentUserId = currentUser.userId || currentUser.id || currentUser.user_id;
+        const currentUserId =
+          currentUser.userId || currentUser.id || currentUser.user_id;
         if (currentUserId !== user.userId) {
           setToast({
             open: true,
@@ -191,10 +198,10 @@ export default function EditUserForm({
     }
 
     // Nếu mật khẩu để trống, giữ nguyên mật khẩu cũ
-    let dataToUpdate = { ...formData };
+    const dataToUpdate = { ...formData };
     if (!formData.passWord) {
-
-      dataToUpdate.passWord = (user as any).passWord || (user as any).password || undefined;
+      dataToUpdate.passWord =
+        (user as any).passWord || (user as any).password || undefined;
     }
 
     try {
@@ -297,7 +304,11 @@ export default function EditUserForm({
             <Button onClick={handleClose} disabled={loading}>
               Cancel
             </Button>
-            <Button type="submit" variant="contained" disabled={loading || !isOwnAccount}>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={loading || !isOwnAccount}
+            >
               {loading ? "Updating..." : "Update User"}
             </Button>
           </DialogActions>

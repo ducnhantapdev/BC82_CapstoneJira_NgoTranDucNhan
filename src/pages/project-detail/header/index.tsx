@@ -1,4 +1,5 @@
 import { Typography, Avatar, AvatarGroup, Tooltip } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import type { ProjectUpdate } from "../../../apis/projects";
 
 interface Member {
@@ -55,6 +56,9 @@ export default function BoardHeader({ project }: BoardHeaderProps) {
               Chưa có thành viên
             </Typography>
           )}
+          <Avatar sx={{ cursor: "pointer" }}>
+            <AddIcon />
+          </Avatar>
         </div>
       </div>
     </div>

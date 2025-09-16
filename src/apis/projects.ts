@@ -288,6 +288,18 @@ export const createTask = async (data: CreateTask) => {
   }
 };
 
+export const deleteTask = async (taskId: number) => {
+  try {
+    const res = await fetcher.delete<ApiResponse<{ message: string }>>(
+      `Project/removeTask?taskId=${taskId}`
+    );
+    return res.data.content;
+  } catch (error) {
+    console.error("Error deleting task:", error);
+    throw error;
+  }
+};
+
 export const updateDescription = async (id: number, data: Description) => {
   try {
     const res = await fetcher.post<ApiResponse<{ message: string }>>(

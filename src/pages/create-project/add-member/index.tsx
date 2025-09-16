@@ -17,7 +17,7 @@ const AddmemberModal: React.FC<OpenProps> = ({ open, onClose, projectId }) => {
     onClose();
     setTimeout(() => {
       navigate("/");
-    }, 800); // Đợi toast hiển thị ngắn rồi chuyển trang
+    }, 800);
   };
 
   return (

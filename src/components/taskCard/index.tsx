@@ -1,4 +1,19 @@
-import { Box, Card, Chip, Typography, Avatar, Tooltip } from "@mui/material";
+import {
+  Box,
+  Card,
+  Chip,
+  Typography,
+  Avatar,
+  Tooltip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import PestControlIcon from "@mui/icons-material/PestControl";
 import AddTaskIcon from "@mui/icons-material/AddTask";
@@ -7,6 +22,7 @@ import { useDrag } from "react-dnd";
 import { useRef, useEffect, useState } from "react";
 import type { TaskDetail } from "../../apis/projects";
 import TaskModal from "../taskModal";
+import { deleteTask } from "../../apis/projects";
 
 interface PropsFromBoardMain {
   props: TaskDetail & { statusId: number };
@@ -14,6 +30,8 @@ interface PropsFromBoardMain {
 
 const TaskCard = ({ props }: PropsFromBoardMain) => {
   const [open, setOpen] = useState(false);
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleOpen = () => {
     setOpen(true);
@@ -60,9 +78,24 @@ const TaskCard = ({ props }: PropsFromBoardMain) => {
             },
           }}
         >
-          <Typography variant="body1" fontWeight={500}>
-            {props.taskName}
-          </Typography>
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography variant="body1" fontWeight={500}>
+              {props.taskName}
+            </Typography>
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenConfirm(true);
+              }}
+            >
+              <CloseIcon fontSize="small" sx={{ color: "#e53935" }} />
+            </IconButton>
+          </Box>
 
           <Box display="flex" alignItems="center" mt={1}>
             <Box display="flex" gap={1}>
@@ -164,6 +197,39 @@ const TaskCard = ({ props }: PropsFromBoardMain) => {
       </Box>
 
       <TaskModal open={open} onClose={() => setOpen(false)} />
+
+      <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
+        <DialogTitle>Xoá task</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Bạn có chắc chắn muốn xoá task "{props.taskName}"?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenConfirm(false)} disabled={isDeleting}>
+            Huỷ
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            disabled={isDeleting}
+            onClick={async () => {
+              setIsDeleting(true);
+              try {
+                await deleteTask(props.taskId);
+                setOpenConfirm(false);
+                window.location.reload();
+              } catch (err) {
+                console.error(err);
+              } finally {
+                setIsDeleting(false);
+              }
+            }}
+          >
+            Xoá
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

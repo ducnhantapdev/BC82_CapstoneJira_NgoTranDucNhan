@@ -22,12 +22,15 @@ export const fetchProjectDetail = createAsyncThunk(
   }
 );
 
+export type ProjectSearchMode = "project" | "user";
+
 interface ProjectState {
   list: ProjectList[];
   currentProject: ProjectUpdate | null;
   loading: boolean;
   error: string | null;
   searchTerm: string;
+  searchMode: ProjectSearchMode;
 }
 
 const initialState: ProjectState = {
@@ -36,6 +39,7 @@ const initialState: ProjectState = {
   loading: false,
   error: null,
   searchTerm: "",
+  searchMode: "project",
 };
 
 const projectSlice = createSlice({
@@ -44,6 +48,9 @@ const projectSlice = createSlice({
   reducers: {
     setSearchTerm: (state, action: PayloadAction<string>) => {
       state.searchTerm = action.payload;
+    },
+    setSearchMode: (state, action: PayloadAction<ProjectSearchMode>) => {
+      state.searchMode = action.payload;
     },
     clearCurrentProject: (state) => {
       state.currentProject = null;
@@ -78,5 +85,6 @@ const projectSlice = createSlice({
   },
 });
 
-export const { setSearchTerm, clearCurrentProject } = projectSlice.actions;
+export const { setSearchTerm, setSearchMode, clearCurrentProject } =
+  projectSlice.actions;
 export default projectSlice.reducer;

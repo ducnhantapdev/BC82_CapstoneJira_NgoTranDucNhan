@@ -1,4 +1,13 @@
-import { Box, Typography, Button } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Button,
+  TextField,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+} from "@mui/material";
 import { DndProvider, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import AddCardIcon from "@mui/icons-material/AddCard";
@@ -6,7 +15,12 @@ import { useRef, useEffect, useState, useCallback } from "react";
 
 import TaskCard from "../../../components/taskCard";
 import type { ProjectUpdate, Task, TaskDetail } from "../../../apis/projects";
-import { updateStatus } from "../../../apis/projects";
+import {
+  updateStatus,
+  createTask,
+  getAllTaskType,
+  getProjectDetailById,
+} from "../../../apis/projects";
 
 interface BoardMainProps {
   project: ProjectUpdate | null;
@@ -106,6 +120,29 @@ export default function BoardMain({ project }: BoardMainProps) {
   const DroppableColumn = ({ taskDetails }: { taskDetails: Task }) => {
     const columnRef = useRef<HTMLDivElement>(null);
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+    const [showQuickAdd, setShowQuickAdd] = useState(false);
+    const [newTaskName, setNewTaskName] = useState("");
+    const [taskTypes, setTaskTypes] = useState<
+      Array<{ id: number; taskType: string }>
+    >([]);
+    const [selectedTaskTypeId, setSelectedTaskTypeId] = useState<number | "">(
+      ""
+    );
+
+    useEffect(() => {
+      const fetchTaskTypes = async () => {
+        try {
+          const types: any = await getAllTaskType();
+          setTaskTypes(types as any);
+          if ((types as any)?.length > 0) {
+            setSelectedTaskTypeId((types as any)[0].id);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      };
+      fetchTaskTypes();
+    }, []);
 
     const [{ isOverCurrent }, drop] = useDrop<
       TaskDetail & { statusId: number },
@@ -398,7 +435,113 @@ export default function BoardMain({ project }: BoardMainProps) {
               justifyContent: "space-between",
             }}
           >
-            <Button startIcon={<AddCardIcon />}>Add new task</Button>
+            {!showQuickAdd ? (
+              <Button
+                startIcon={<AddCardIcon />}
+                onClick={() => setShowQuickAdd(true)}
+              >
+                Add new task
+              </Button>
+            ) : (
+              <Box sx={{ width: "100%" }}>
+                <Box sx={{ display: "flex", gap: 1, width: "100%" }}>
+                  <Box sx={{ flex: 7 }}>
+                    <TextField
+                      size="small"
+                      fullWidth
+                      placeholder="What needs to be done?"
+                      value={newTaskName}
+                      onChange={(e) => setNewTaskName(e.target.value)}
+                    />
+                  </Box>
+                  <Box sx={{ flex: 3 }}>
+                    <FormControl size="small" fullWidth>
+                      <InputLabel
+                        id={`task-type-label-${taskDetails.statusId}`}
+                      >
+                        Type
+                      </InputLabel>
+                      <Select
+                        labelId={`task-type-label-${taskDetails.statusId}`}
+                        label="Type"
+                        value={selectedTaskTypeId}
+                        onChange={(e) =>
+                          setSelectedTaskTypeId(e.target.value as number)
+                        }
+                      >
+                        {taskTypes.map((t) => (
+                          <MenuItem key={t.id} value={t.id}>
+                            {t.taskType}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                </Box>
+
+                <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
+                  <Button
+                    variant="contained"
+                    disabled={!newTaskName.trim() || selectedTaskTypeId === ""}
+                    onClick={async () => {
+                      try {
+                        const projectId = localProject?.id as number;
+                        const selectedType = taskTypes.find(
+                          (t) => t.id === selectedTaskTypeId
+                        );
+                        const tempTaskId = Date.now();
+                        setLocalProject((prev) => {
+                          if (!prev) return prev;
+                          const updated = { ...prev } as ProjectUpdate;
+                          updated.lstTask = updated.lstTask.map((col) => {
+                            if (col.statusId !== taskDetails.statusId)
+                              return col;
+                            const newDetail = {
+                              taskId: tempTaskId,
+                              taskName: newTaskName.trim(),
+                              taskType: selectedType?.taskType,
+                              assigness: [],
+                            } as TaskDetail;
+                            const current = col.lstTaskDeTail || [];
+                            return {
+                              ...col,
+                              lstTaskDeTail: [...current, newDetail],
+                            };
+                          });
+                          return updated;
+                        });
+
+                        await createTask({
+                          listUserAsign: [],
+                          taskName: newTaskName.trim(),
+                          description: "",
+                          statusId: taskDetails.statusId,
+                          originalEstimate: 0,
+                          timeTrackingSpent: 0,
+                          timeTrackingRemaining: 0,
+                          projectId,
+                          typeId: selectedTaskTypeId as number,
+                          priorityId: 2,
+                        });
+
+                        const fresh = await getProjectDetailById(projectId);
+                        if (fresh) setLocalProject(fresh as ProjectUpdate);
+
+                        setShowQuickAdd(false);
+                        setNewTaskName("");
+                      } catch (e) {
+                        console.error(e);
+                      }
+                    }}
+                  >
+                    Save
+                  </Button>
+                  <Button variant="text" onClick={() => setShowQuickAdd(false)}>
+                    Cancel
+                  </Button>
+                </Box>
+              </Box>
+            )}
           </Box>
         )}
       </Box>

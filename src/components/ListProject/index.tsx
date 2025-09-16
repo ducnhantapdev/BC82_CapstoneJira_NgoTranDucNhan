@@ -32,9 +32,11 @@ export default function ListProjects() {
   const [editUser, setEditUser] = useState<User | null>(null);
   const [openEditUser, setOpenEditUser] = useState(false);
 
-  const { list: allProjects, searchTerm: projectSearchTerm } = useSelector(
-    (state: RootState) => state.projects
-  );
+  const {
+    list: allProjects,
+    searchTerm: projectSearchTerm,
+    searchMode,
+  } = useSelector((state: RootState) => state.projects);
 
   const { list: allUsers, searchTerm: userSearchTerm } = useSelector(
     (state: RootState) => state.users
@@ -42,9 +44,21 @@ export default function ListProjects() {
 
   const { currentView } = useSelector((state: RootState) => state.view);
 
-  const filteredProjects = allProjects.filter((project) =>
-    project.projectName.toLowerCase().includes(projectSearchTerm.toLowerCase())
-  );
+  const filteredProjects = allProjects.filter((project) => {
+    const term = projectSearchTerm.trim().toLowerCase();
+    if (!term) return true;
+    if (searchMode === "project") {
+      return project.projectName.toLowerCase().includes(term);
+    }
+    // searchMode === "user": match by creator or any member name
+    const creatorName = (
+      (project.creator as { id: number; name?: string } | undefined)?.name || ""
+    ).toLowerCase();
+    const memberNames = ((project.members as any[]) || [])
+      .map((m) => (m?.name || "").toLowerCase())
+      .some((name: string) => name.includes(term));
+    return creatorName.includes(term) || memberNames;
+  });
 
   const filteredUsers = allUsers.filter((user) =>
     user.name.toLowerCase().includes(userSearchTerm.toLowerCase())

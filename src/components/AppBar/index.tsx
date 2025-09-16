@@ -8,12 +8,14 @@ import type { AppDispatch, RootState } from "../../redux/store";
 import { setSearchTerm as setProjectSearchTerm } from "../../redux/projectSlice";
 import { setSearchTerm as setUserSearchTerm } from "../../redux/userSlice";
 import theme from "../../theme";
+import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import { setSearchMode } from "../../redux/projectSlice";
 
 import CreateTaskOnMenu from "../createTaskOnMenu";
 import ProjectsMenu from "./menu/project";
 import UsersMenu from "./menu/users";
 import SearchBox from "./menu/search";
-import SettingMenu from "./menu/setting-icon";
+
 import AccoutMenu from "./menu/account-menu";
 
 export default function AppBar() {
@@ -24,6 +26,9 @@ export default function AppBar() {
   );
   const userSearchText = useSelector(
     (state: RootState) => state.users.searchTerm
+  );
+  const projectSearchMode = useSelector(
+    (state: RootState) => state.projects.searchMode
   );
   const navigate = useNavigate();
   return (
@@ -61,6 +66,23 @@ export default function AppBar() {
             />
           </div>
           <div className="flex gap-2 items-center">
+            {currentView === "projects" && (
+              <FormControl size="small" sx={{ minWidth: 100 }}>
+                <InputLabel id="search-mode-label">Mode</InputLabel>
+                <Select
+                  labelId="search-mode-label"
+                  id="search-mode-select"
+                  value={projectSearchMode}
+                  label="Mode"
+                  onChange={(e) =>
+                    dispatch(setSearchMode(e.target.value as any))
+                  }
+                >
+                  <MenuItem value="project">Project</MenuItem>
+                  <MenuItem value="user">User</MenuItem>
+                </Select>
+              </FormControl>
+            )}
             <SearchBox
               value={
                 currentView === "projects" ? projectSearchText : userSearchText
@@ -78,7 +100,7 @@ export default function AppBar() {
                 }
               }}
             />
-            <SettingMenu />
+
             <AccoutMenu />
           </div>
         </div>

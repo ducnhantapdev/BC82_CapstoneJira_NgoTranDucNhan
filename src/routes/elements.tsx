@@ -1,7 +1,6 @@
 import { useRoutes } from "react-router-dom";
 import { PATH } from "./path";
 
-import Login from "../components/formLogin";
 import Register from "../pages/auth/register";
 
 import Home from "../pages/home";
@@ -11,6 +10,8 @@ import HomeLayout from "../components/layout/home-layout";
 import UpdateProject from "../pages/update-project";
 import ProjectDetail from "../pages/project-detail";
 import PrivateRoute from "../components/PrivateRoute";
+import UserLayout from "../components/layout/user-layout";
+import Login from "../pages/auth/login";
 
 const useRouterElements = () => {
   const elements = useRoutes([
@@ -24,7 +25,11 @@ const useRouterElements = () => {
     },
     {
       path: PATH.LOGIN,
-      element: <Login />,
+      element: (
+        <UserLayout>
+          <Login />
+        </UserLayout>
+      ),
     },
     {
       path: PATH.REGISTER,

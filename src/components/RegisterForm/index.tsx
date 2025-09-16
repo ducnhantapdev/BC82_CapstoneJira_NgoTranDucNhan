@@ -73,17 +73,14 @@ export default function RegisterForm() {
       toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
       console.log("Đăng ký thành công:", response);
 
-      // Reset form
       reset();
 
-      // Chuyển về trang đăng nhập sau 2 giây
       setTimeout(() => {
         navigate(PATH.LOGIN);
       }, 2000);
     } catch (error: any) {
       console.error("Lỗi đăng ký:", error);
 
-      // Xử lý lỗi từ API
       let errorMessage = "Đăng ký thất bại. Vui lòng thử lại!";
 
       if (error.response?.data?.message) {
@@ -110,7 +107,6 @@ export default function RegisterForm() {
         </h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Họ tên */}
           <div>
             <input
               type="text"
@@ -123,7 +119,6 @@ export default function RegisterForm() {
             )}
           </div>
 
-          {/* Email */}
           <div>
             <input
               type="email"
@@ -138,7 +133,6 @@ export default function RegisterForm() {
             )}
           </div>
 
-          {/* Số điện thoại */}
           <div>
             <input
               type="tel"
@@ -153,7 +147,6 @@ export default function RegisterForm() {
             )}
           </div>
 
-          {/* Mật khẩu */}
           <div>
             <input
               type="password"
