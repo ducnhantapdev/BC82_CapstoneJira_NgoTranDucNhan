@@ -1,7 +1,6 @@
 import { Typography, Avatar, AvatarGroup, Tooltip } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import type { ProjectUpdate } from "../../../apis/projects";
-import AddIcon from '@mui/icons-material/Add';
 import { useState } from "react";
 import AddmemberModal from "../../create-project/add-member";
 
@@ -17,7 +16,10 @@ interface BoardHeaderProps {
   onProjectUpdate?: () => void;
 }
 
-export default function BoardHeader({ project, onProjectUpdate }: BoardHeaderProps) {
+export default function BoardHeader({
+  project,
+  onProjectUpdate,
+}: BoardHeaderProps) {
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
 
   const handleAddMemberClick = () => {
@@ -74,9 +76,6 @@ export default function BoardHeader({ project, onProjectUpdate }: BoardHeaderPro
               Chưa có thành viên
             </Typography>
           )}
-<<<<<<< HEAD
-          <Avatar sx={{ cursor: "pointer" }}>
-=======
           <Avatar
             sx={{
               backgroundColor: "primary.main",
@@ -84,12 +83,11 @@ export default function BoardHeader({ project, onProjectUpdate }: BoardHeaderPro
             }}
             onClick={handleAddMemberClick}
           >
->>>>>>> da7fa4ae80a3afeeb6e9e72046058cad69a8ada4
             <AddIcon />
           </Avatar>
         </div>
       </div>
-      
+
       <AddmemberModal
         open={isAddMemberModalOpen}
         onClose={handleCloseModal}
