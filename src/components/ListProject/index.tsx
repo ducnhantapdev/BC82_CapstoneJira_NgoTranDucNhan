@@ -1,6 +1,13 @@
 import Box from "@mui/material/Box";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
-import { Avatar, AvatarGroup, Tooltip } from "@mui/material";
+import {
+  Avatar,
+  AvatarGroup,
+  Tooltip,
+  Typography,
+  Paper,
+  Chip,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchProjects } from "../../redux/projectSlice";
@@ -9,14 +16,96 @@ import type { RootState, AppDispatch } from "../../redux/store";
 import CreateProjectModal from "../AppBar/menu/create-project-modal";
 import { type ProjectList } from "../../apis/projects";
 import { type User } from "../../apis/users";
-
 import { useNavigate } from "react-router-dom";
-import { Typography } from "@mui/material";
 import ActionMenu from "./action";
 import DeleteDialog from "./action/delete";
 import UserActionMenu from "../UserActionMenu";
 import EditUserForm from "../EditUserForm";
 import DeleteUserDialog from "../DeleteUserDialog";
+import { styled } from "@mui/material/styles";
+
+// Styled DataGrid với theme đẹp hơn
+const StyledDataGrid = styled(DataGrid)(() => ({
+  border: "none",
+  borderRadius: "12px",
+  backgroundColor: "#ffffff",
+  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+  "& .MuiDataGrid-main": {
+    borderRadius: "12px",
+  },
+  "& .MuiDataGrid-columnHeaders": {
+    backgroundColor: "#f8fafc",
+    borderRadius: "12px 12px 0 0",
+    borderBottom: "2px solid #e2e8f0",
+    "& .MuiDataGrid-columnHeader": {
+      fontWeight: 600,
+      fontSize: "14px",
+      color: "#475569",
+      padding: "16px 12px",
+      "&:focus": {
+        outline: "none",
+      },
+    },
+    "& .MuiDataGrid-columnHeaderTitle": {
+      fontWeight: 600,
+    },
+  },
+  "& .MuiDataGrid-row": {
+    borderBottom: "1px solid #f1f5f9",
+    "&:hover": {
+      backgroundColor: "#f8fafc",
+      transition: "background-color 0.2s ease",
+    },
+    "&.Mui-selected": {
+      backgroundColor: "#e0f2fe",
+      "&:hover": {
+        backgroundColor: "#b3e5fc",
+      },
+    },
+  },
+  "& .MuiDataGrid-cell": {
+    borderBottom: "none",
+    padding: "12px",
+    fontSize: "14px",
+    color: "#334155",
+    "&:focus": {
+      outline: "none",
+    },
+  },
+  "& .MuiDataGrid-footerContainer": {
+    borderTop: "1px solid #e2e8f0",
+    backgroundColor: "#f8fafc",
+    borderRadius: "0 0 12px 12px",
+  },
+  "& .MuiDataGrid-selectionColumnHeader": {
+    backgroundColor: "#f8fafc",
+  },
+  "& .MuiDataGrid-checkboxInput": {
+    color: "#3b82f6",
+  },
+}));
+
+// Styled Avatar với border đẹp hơn
+const StyledAvatar = styled(Avatar)(() => ({
+  border: "2px solid #e2e8f0",
+  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+  transition: "all 0.2s ease",
+  "&:hover": {
+    transform: "scale(1.05)",
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+  },
+}));
+
+// Styled AvatarGroup
+const StyledAvatarGroup = styled(AvatarGroup)(() => ({
+  "& .MuiAvatar-root": {
+    width: 28,
+    height: 28,
+    fontSize: 11,
+    border: "2px solid #ffffff",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+  },
+}));
 
 interface memberProps {
   userId: number;
@@ -54,7 +143,7 @@ export default function ListProjects() {
     const creatorName = (
       (project.creator as { id: number; name?: string } | undefined)?.name || ""
     ).toLowerCase();
-    const memberNames = ((project.members as any[]) || [])
+    const memberNames = ((project.members as memberProps[]) || [])
       .map((m) => (m?.name || "").toLowerCase())
       .some((name: string) => name.includes(term));
     return creatorName.includes(term) || memberNames;
@@ -100,98 +189,128 @@ export default function ListProjects() {
   };
 
   const projectColumns: GridColDef<ProjectList>[] = [
-    { field: "id", headerName: "ID", width: 90 },
+    {
+      field: "id",
+      headerName: "ID",
+      width: 90,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => (
+        <Chip
+          label={params.value}
+          size="small"
+          sx={{
+            backgroundColor: "#e0f2fe",
+            color: "#0277bd",
+            fontWeight: 600,
+            fontSize: "12px",
+          }}
+        />
+      ),
+    },
     {
       field: "projectName",
-      headerName: "Project Name",
-      width: 250,
+      headerName: "Tên dự án",
+      width: 280,
       editable: true,
       renderCell: (params) => (
-        <Typography
-          color="primary"
-          sx={{ cursor: "pointer", fontWeight: 600 }}
-          onClick={() => navigate(toProjectDetailUrl(params.row.id))}
-          className="pt-3"
-        >
-          {params.row.projectName}
-        </Typography>
+        <Box>
+          <Typography
+            color="primary"
+            sx={{
+              cursor: "pointer",
+              fontWeight: 600,
+              fontSize: "14px",
+              "&:hover": {
+                textDecoration: "underline",
+                color: "#1976d2",
+              },
+            }}
+            onClick={() => navigate(toProjectDetailUrl(params.row.id))}
+          >
+            {params.row.projectName}
+          </Typography>
+          <Typography variant="caption" color="#64748b">
+            Nhấp để xem chi tiết
+          </Typography>
+        </Box>
       ),
     },
     {
       field: "categoryName",
-      headerName: "Category Name",
+      headerName: "Danh mục",
       width: 150,
       editable: true,
+      renderCell: (params) => (
+        <Chip
+          label={params.value}
+          size="small"
+          sx={{
+            backgroundColor: "#f3e8ff",
+            color: "#7c3aed",
+            fontWeight: 500,
+            fontSize: "12px",
+          }}
+        />
+      ),
     },
     {
       field: "creator",
-      headerName: "Creator",
-      width: 120,
+      headerName: "Người tạo",
+      width: 150,
       renderCell: (params) => {
         const creator = params.row.creator as { id: number; name: string };
-        return creator && creator.name ? creator.name : "N/A";
+        return (
+          <Typography variant="body2" color="#475569" fontWeight={500}>
+            {creator && creator.name ? creator.name : "N/A"}
+          </Typography>
+        );
       },
     },
-
     {
       field: "alias",
-      headerName: "Alias",
-      width: 250,
+      headerName: "Bí danh",
+      width: 200,
+      renderCell: (params) => (
+        <Typography variant="body2" color="#475569">
+          {params.value || "Chưa có"}
+        </Typography>
+      ),
     },
     {
       field: "member",
-      headerName: "Member",
+      headerName: "Thành viên",
       width: 200,
       renderCell: (params) => {
         const members = params.row.members as memberProps[];
         if (!members || members.length === 0) {
-          return "N/A";
+          return (
+            <Typography variant="body2" color="#94a3b8">
+              Chưa có thành viên
+            </Typography>
+          );
         }
 
-        const remainingMembers = members.slice(2);
-        const remainingNames = remainingMembers
-          .map((member) => member.name)
-          .join(", ");
-
         return (
-          <AvatarGroup
-            max={3}
-            sx={{
-              "& .MuiAvatar-root": { width: 24, height: 24, fontSize: 10 },
-            }}
-          >
+          <StyledAvatarGroup max={3}>
             {members.map((member, index) => (
               <Tooltip key={index} title={member.name} arrow>
-                <Avatar
-                  alt={member.avatar}
+                <StyledAvatar
+                  alt={member.name}
                   src={`${member.avatar}rounded=true&background=random`}
-                  sx={{ width: 30, height: 30, fontSize: 16 }}
                 />
               </Tooltip>
             ))}
-            {remainingMembers.length > 0 && (
-              <Tooltip title={remainingNames} arrow>
-                <Avatar
-                  sx={{
-                    width: 24,
-                    height: 24,
-                    fontSize: 10,
-                    backgroundColor: "#e0e0e0",
-                    color: "#666",
-                  }}
-                >
-                  +{remainingMembers.length}
-                </Avatar>
-              </Tooltip>
-            )}
-          </AvatarGroup>
+          </StyledAvatarGroup>
         );
       },
     },
     {
       field: "actions",
-      headerName: "Actions",
-      width: 100,
+      headerName: "Thao tác",
+      width: 120,
+      headerAlign: "center",
+      align: "center",
       renderCell: (params) => (
         <ActionMenu
           onUpdate={() => onUpdate(params.row.id)}
@@ -202,34 +321,73 @@ export default function ListProjects() {
   ];
 
   const userColumns: GridColDef<User>[] = [
-    { field: "userId", headerName: "ID", width: 90 },
+    {
+      field: "userId",
+      headerName: "ID",
+      width: 90,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => (
+        <Chip
+          label={params.value}
+          size="small"
+          sx={{
+            backgroundColor: "#e0f2fe",
+            color: "#0277bd",
+            fontWeight: 600,
+            fontSize: "12px",
+          }}
+        />
+      ),
+    },
     {
       field: "name",
-      headerName: "Name",
-      width: 200,
+      headerName: "Tên người dùng",
+      width: 250,
       renderCell: (params) => (
-        <Box display="flex" alignItems="center" gap={1}>
-          <Avatar src={params.row.avatar} sx={{ width: 32, height: 32 }} />
-          <Typography variant="body2" fontWeight={500}>
-            {params.row.name}
-          </Typography>
+        <Box display="flex" alignItems="center" gap={2}>
+          <StyledAvatar
+            src={params.row.avatar}
+            sx={{ width: 40, height: 40 }}
+            alt={params.row.name}
+          />
+          <Box>
+            <Typography variant="body2" fontWeight={600} color="#1e293b">
+              {params.row.name}
+            </Typography>
+            <Typography variant="caption" color="#64748b">
+              Người dùng
+            </Typography>
+          </Box>
         </Box>
       ),
     },
     {
       field: "email",
       headerName: "Email",
-      width: 250,
+      width: 280,
+      renderCell: (params) => (
+        <Typography variant="body2" color="#475569">
+          {params.value}
+        </Typography>
+      ),
     },
     {
       field: "phoneNumber",
-      headerName: "Phone Number",
-      width: 150,
+      headerName: "Số điện thoại",
+      width: 180,
+      renderCell: (params) => (
+        <Typography variant="body2" color="#475569">
+          {params.value || "Chưa cập nhật"}
+        </Typography>
+      ),
     },
     {
       field: "actions",
-      headerName: "Actions",
-      width: 100,
+      headerName: "Thao tác",
+      width: 120,
+      headerAlign: "center",
+      align: "center",
       renderCell: (params) => (
         <UserActionMenu
           onEdit={() => onEditUser(params.row)}
@@ -242,20 +400,35 @@ export default function ListProjects() {
   return (
     <>
       <div>
-        <div id="list-header" className="flex justify-between items-center ">
-          <h1 className="font-bold text-2xl">
-            {currentView === "projects" ? "Projects" : "Users"}
+        <div
+          id="list-header"
+          className="flex justify-between items-center mb-8"
+        >
+          <h1 className="font-bold text-3xl text-gray-800">
+            {currentView === "projects"
+              ? "Danh sách dự án"
+              : "Danh sách người dùng"}
           </h1>
           {currentView === "projects" && <CreateProjectModal />}
         </div>
-        <div id="list-content" className="mt-10">
-          <Box sx={{ height: "100%", width: "100%" }}>
-            <DataGrid
+        <div id="list-content">
+          <Paper
+            elevation={0}
+            sx={{
+              borderRadius: "12px",
+              overflow: "hidden",
+              backgroundColor: "transparent",
+            }}
+          >
+            <StyledDataGrid
               rows={
                 currentView === "projects" ? filteredProjects : filteredUsers
               }
               columns={
-                currentView === "projects" ? projectColumns : userColumns
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (currentView === "projects"
+                  ? projectColumns
+                  : userColumns) as any
               }
               initialState={{
                 pagination: {
@@ -267,11 +440,27 @@ export default function ListProjects() {
               pageSizeOptions={[5, 10, 25]}
               checkboxSelection
               disableRowSelectionOnClick
-              getRowId={(row: any) =>
-                currentView === "projects" ? row.id : row.userId
+              getRowId={(row) =>
+                currentView === "projects"
+                  ? (row as ProjectList).id
+                  : (row as User).userId
               }
+              sx={{
+                height: 600,
+                width: "100%",
+              }}
+              localeText={{
+                noRowsLabel:
+                  currentView === "projects"
+                    ? "Không có dữ liệu dự án"
+                    : "Không có dữ liệu người dùng",
+                footerRowSelected: (count) =>
+                  count !== 1
+                    ? `${count.toLocaleString()} hàng được chọn`
+                    : `${count.toLocaleString()} hàng được chọn`,
+              }}
             />
-          </Box>
+          </Paper>
         </div>
       </div>
       {currentView === "projects" && (
