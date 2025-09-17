@@ -12,7 +12,7 @@ import { getUsersAPI, type User } from "../../apis/users";
 import { styled } from "@mui/material/styles";
 
 // Styled DataGrid với theme đẹp hơn
-const StyledDataGrid = styled(DataGrid)(() => ({
+const StyledDataGrid = styled(DataGrid<User>)(() => ({
   border: "none",
   borderRadius: "12px",
   backgroundColor: "#ffffff",
