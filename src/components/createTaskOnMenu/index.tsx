@@ -202,6 +202,21 @@ export default function CreateTaskOnMenu({
             >
               <Select
                 placeholder="Please select a project"
+                showSearch
+                allowClear
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  (String((option as any)?.children) || "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+                filterSort={(optionA, optionB) =>
+                  String((optionA as any)?.children)
+                    .toLowerCase()
+                    .localeCompare(
+                      String((optionB as any)?.children).toLowerCase()
+                    )
+                }
                 onChange={(value) => setSelectedProject(value)}
               >
                 {projects.map((project) => (
