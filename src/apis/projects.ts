@@ -1,8 +1,20 @@
 import fetcher from "./fetcher";
 
+export interface ProjectMember {
+  userId: number;
+  name?: string;
+  avatar?: string;
+}
+
+export interface ProjectCreator {
+  id: number;
+  name?: string;
+  avatar?: string;
+}
+
 export interface ProjectList {
-  members: Array<object>;
-  creator: object;
+  members: ProjectMember[];
+  creator: ProjectCreator;
   id: number;
   projectName: string;
   description: string;

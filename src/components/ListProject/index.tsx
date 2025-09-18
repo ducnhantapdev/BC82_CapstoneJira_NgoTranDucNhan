@@ -1,117 +1,28 @@
 import Box from "@mui/material/Box";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
-import {
-  Avatar,
-  AvatarGroup,
-  Tooltip,
-  Typography,
-  Paper,
-  Chip,
-} from "@mui/material";
+import { Avatar, AvatarGroup, Tooltip } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchProjects } from "../../redux/projectSlice";
 import { fetchUsers } from "../../redux/userSlice";
 import type { RootState, AppDispatch } from "../../redux/store";
 import CreateProjectModal from "../AppBar/menu/create-project-modal";
-import { type ProjectList } from "../../apis/projects";
+import {
+  type ProjectList,
+  type ProjectMember,
+  type ProjectCreator,
+} from "../../apis/projects";
 import { type User } from "../../apis/users";
+
 import { useNavigate } from "react-router-dom";
+import { Typography } from "@mui/material";
 import ActionMenu from "./action";
 import DeleteDialog from "./action/delete";
 import UserActionMenu from "../UserActionMenu";
 import EditUserForm from "../EditUserForm";
 import DeleteUserDialog from "../DeleteUserDialog";
-import { styled } from "@mui/material/styles";
-
-// Styled DataGrid với theme đẹp hơn
-const StyledDataGrid = styled(DataGrid)(() => ({
-  border: "none",
-  borderRadius: "12px",
-  backgroundColor: "#ffffff",
-  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
-  "& .MuiDataGrid-main": {
-    borderRadius: "12px",
-  },
-  "& .MuiDataGrid-columnHeaders": {
-    backgroundColor: "#f8fafc",
-    borderRadius: "12px 12px 0 0",
-    borderBottom: "2px solid #e2e8f0",
-    "& .MuiDataGrid-columnHeader": {
-      fontWeight: 600,
-      fontSize: "14px",
-      color: "#475569",
-      padding: "16px 12px",
-      "&:focus": {
-        outline: "none",
-      },
-    },
-    "& .MuiDataGrid-columnHeaderTitle": {
-      fontWeight: 600,
-    },
-  },
-  "& .MuiDataGrid-row": {
-    borderBottom: "1px solid #f1f5f9",
-    "&:hover": {
-      backgroundColor: "#f8fafc",
-      transition: "background-color 0.2s ease",
-    },
-    "&.Mui-selected": {
-      backgroundColor: "#e0f2fe",
-      "&:hover": {
-        backgroundColor: "#b3e5fc",
-      },
-    },
-  },
-  "& .MuiDataGrid-cell": {
-    borderBottom: "none",
-    padding: "12px",
-    fontSize: "14px",
-    color: "#334155",
-    "&:focus": {
-      outline: "none",
-    },
-  },
-  "& .MuiDataGrid-footerContainer": {
-    borderTop: "1px solid #e2e8f0",
-    backgroundColor: "#f8fafc",
-    borderRadius: "0 0 12px 12px",
-  },
-  "& .MuiDataGrid-selectionColumnHeader": {
-    backgroundColor: "#f8fafc",
-  },
-  "& .MuiDataGrid-checkboxInput": {
-    color: "#3b82f6",
-  },
-}));
-
-// Styled Avatar với border đẹp hơn
-const StyledAvatar = styled(Avatar)(() => ({
-  border: "2px solid #e2e8f0",
-  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-  transition: "all 0.2s ease",
-  "&:hover": {
-    transform: "scale(1.05)",
-    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-  },
-}));
-
-// Styled AvatarGroup
-const StyledAvatarGroup = styled(AvatarGroup)(() => ({
-  "& .MuiAvatar-root": {
-    width: 28,
-    height: 28,
-    fontSize: 11,
-    border: "2px solid #ffffff",
-    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-  },
-}));
-
-interface memberProps {
-  userId: number;
-  name: string;
-  avatar: string;
-}
+import { useMediaQuery } from "@mui/material";
+import Pagination from "@mui/material/Pagination";
 
 export default function ListProjects() {
   const [deleteId, setDeleteId] = useState<number>(0);
@@ -120,6 +31,8 @@ export default function ListProjects() {
   const [openDeleteUser, setOpenDeleteUser] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
   const [openEditUser, setOpenEditUser] = useState(false);
+  const [projectPage, setProjectPage] = useState<number>(1);
+  const PROJECTS_PER_PAGE = 10;
 
   const {
     list: allProjects,
@@ -139,15 +52,30 @@ export default function ListProjects() {
     if (searchMode === "project") {
       return project.projectName.toLowerCase().includes(term);
     }
-    // searchMode === "user": match by creator or any member name
+
     const creatorName = (
-      (project.creator as { id: number; name?: string } | undefined)?.name || ""
+      (project.creator as ProjectCreator | undefined)?.name || ""
     ).toLowerCase();
-    const memberNames = ((project.members as memberProps[]) || [])
-      .map((m) => (m?.name || "").toLowerCase())
+    const memberNames = ((project.members as ProjectMember[]) || [])
+      .map((m: ProjectMember) => (m?.name || "").toLowerCase())
       .some((name: string) => name.includes(term));
     return creatorName.includes(term) || memberNames;
   });
+
+  useEffect(() => {
+    setProjectPage(1);
+  }, [projectSearchTerm, searchMode, currentView]);
+
+  const totalProjectPages = Math.max(
+    1,
+    Math.ceil(filteredProjects.length / PROJECTS_PER_PAGE)
+  );
+  const pagedProjects: ProjectList[] = isNaN(projectPage)
+    ? filteredProjects.slice(0, PROJECTS_PER_PAGE)
+    : filteredProjects.slice(
+        (projectPage - 1) * PROJECTS_PER_PAGE,
+        projectPage * PROJECTS_PER_PAGE
+      );
 
   const filteredUsers = allUsers.filter((user) =>
     user.name.toLowerCase().includes(userSearchTerm.toLowerCase())
@@ -156,6 +84,7 @@ export default function ListProjects() {
   const dispatch = useDispatch<AppDispatch>();
 
   const navigate = useNavigate();
+  const isSmallScreen = useMediaQuery("(max-width:430px)");
 
   const toProjectDetailUrl = (id: number) => {
     return `/project/${id}`;
@@ -189,128 +118,98 @@ export default function ListProjects() {
   };
 
   const projectColumns: GridColDef<ProjectList>[] = [
-    {
-      field: "id",
-      headerName: "ID",
-      width: 90,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) => (
-        <Chip
-          label={params.value}
-          size="small"
-          sx={{
-            backgroundColor: "#e0f2fe",
-            color: "#0277bd",
-            fontWeight: 600,
-            fontSize: "12px",
-          }}
-        />
-      ),
-    },
+    { field: "id", headerName: "ID", width: 90 },
     {
       field: "projectName",
-      headerName: "Tên dự án",
-      width: 280,
+      headerName: "Project Name",
+      width: 250,
       editable: true,
       renderCell: (params) => (
-        <Box>
-          <Typography
-            color="primary"
-            sx={{
-              cursor: "pointer",
-              fontWeight: 600,
-              fontSize: "14px",
-              "&:hover": {
-                textDecoration: "underline",
-                color: "#1976d2",
-              },
-            }}
-            onClick={() => navigate(toProjectDetailUrl(params.row.id))}
-          >
-            {params.row.projectName}
-          </Typography>
-          <Typography variant="caption" color="#64748b">
-            Nhấp để xem chi tiết
-          </Typography>
-        </Box>
-      ),
-    },
-    {
-      field: "categoryName",
-      headerName: "Danh mục",
-      width: 150,
-      editable: true,
-      renderCell: (params) => (
-        <Chip
-          label={params.value}
-          size="small"
-          sx={{
-            backgroundColor: "#f3e8ff",
-            color: "#7c3aed",
-            fontWeight: 500,
-            fontSize: "12px",
-          }}
-        />
-      ),
-    },
-    {
-      field: "creator",
-      headerName: "Người tạo",
-      width: 150,
-      renderCell: (params) => {
-        const creator = params.row.creator as { id: number; name: string };
-        return (
-          <Typography variant="body2" color="#475569" fontWeight={500}>
-            {creator && creator.name ? creator.name : "N/A"}
-          </Typography>
-        );
-      },
-    },
-    {
-      field: "alias",
-      headerName: "Bí danh",
-      width: 200,
-      renderCell: (params) => (
-        <Typography variant="body2" color="#475569">
-          {params.value || "Chưa có"}
+        <Typography
+          color="primary"
+          sx={{ cursor: "pointer", fontWeight: 600 }}
+          onClick={() => navigate(toProjectDetailUrl(params.row.id))}
+          className="pt-3"
+        >
+          {params.row.projectName}
         </Typography>
       ),
     },
     {
+      field: "categoryName",
+      headerName: "Category Name",
+      width: 150,
+      editable: true,
+    },
+    {
+      field: "creator",
+      headerName: "Creator",
+      width: 120,
+      renderCell: (params) => {
+        const creator = params.row.creator as ProjectCreator;
+        return creator && creator.name ? creator.name : "N/A";
+      },
+    },
+
+    {
+      field: "alias",
+      headerName: "Alias",
+      width: 250,
+    },
+    {
       field: "member",
-      headerName: "Thành viên",
+      headerName: "Member",
       width: 200,
       renderCell: (params) => {
-        const members = params.row.members as memberProps[];
+        const members = params.row.members as ProjectMember[];
         if (!members || members.length === 0) {
-          return (
-            <Typography variant="body2" color="#94a3b8">
-              Chưa có thành viên
-            </Typography>
-          );
+          return "N/A";
         }
 
+        const remainingMembers = members.slice(2);
+        const remainingNames = remainingMembers
+          .map((member: ProjectMember) => member.name)
+          .join(", ");
+
         return (
-          <StyledAvatarGroup max={3}>
-            {members.map((member, index) => (
+          <AvatarGroup
+            max={3}
+            sx={{
+              "& .MuiAvatar-root": { width: 24, height: 24, fontSize: 10 },
+            }}
+          >
+            {members.map((member: ProjectMember, index: number) => (
               <Tooltip key={index} title={member.name} arrow>
-                <StyledAvatar
-                  alt={member.name}
+                <Avatar
+                  alt={member.avatar}
                   src={`${member.avatar}rounded=true&background=random`}
+                  sx={{ width: 30, height: 30, fontSize: 16 }}
                 />
               </Tooltip>
             ))}
-          </StyledAvatarGroup>
+            {remainingMembers.length > 0 && (
+              <Tooltip title={remainingNames} arrow>
+                <Avatar
+                  sx={{
+                    width: 24,
+                    height: 24,
+                    fontSize: 10,
+                    backgroundColor: "#e0e0e0",
+                    color: "#666",
+                  }}
+                >
+                  +{remainingMembers.length}
+                </Avatar>
+              </Tooltip>
+            )}
+          </AvatarGroup>
         );
       },
     },
     {
       field: "actions",
-      headerName: "Thao tác",
-      width: 120,
-      headerAlign: "center",
-      align: "center",
+      headerName: "Actions",
+      width: 100,
       renderCell: (params) => (
         <ActionMenu
           onUpdate={() => onUpdate(params.row.id)}
@@ -321,73 +220,34 @@ export default function ListProjects() {
   ];
 
   const userColumns: GridColDef<User>[] = [
-    {
-      field: "userId",
-      headerName: "ID",
-      width: 90,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) => (
-        <Chip
-          label={params.value}
-          size="small"
-          sx={{
-            backgroundColor: "#e0f2fe",
-            color: "#0277bd",
-            fontWeight: 600,
-            fontSize: "12px",
-          }}
-        />
-      ),
-    },
+    { field: "userId", headerName: "ID", width: 90 },
     {
       field: "name",
-      headerName: "Tên người dùng",
-      width: 250,
+      headerName: "Name",
+      width: 200,
       renderCell: (params) => (
-        <Box display="flex" alignItems="center" gap={2}>
-          <StyledAvatar
-            src={params.row.avatar}
-            sx={{ width: 40, height: 40 }}
-            alt={params.row.name}
-          />
-          <Box>
-            <Typography variant="body2" fontWeight={600} color="#1e293b">
-              {params.row.name}
-            </Typography>
-            <Typography variant="caption" color="#64748b">
-              Người dùng
-            </Typography>
-          </Box>
+        <Box display="flex" alignItems="center" gap={1}>
+          <Avatar src={params.row.avatar} sx={{ width: 32, height: 32 }} />
+          <Typography variant="body2" fontWeight={500}>
+            {params.row.name}
+          </Typography>
         </Box>
       ),
     },
     {
       field: "email",
       headerName: "Email",
-      width: 280,
-      renderCell: (params) => (
-        <Typography variant="body2" color="#475569">
-          {params.value}
-        </Typography>
-      ),
+      width: 250,
     },
     {
       field: "phoneNumber",
-      headerName: "Số điện thoại",
-      width: 180,
-      renderCell: (params) => (
-        <Typography variant="body2" color="#475569">
-          {params.value || "Chưa cập nhật"}
-        </Typography>
-      ),
+      headerName: "Phone Number",
+      width: 150,
     },
     {
       field: "actions",
-      headerName: "Thao tác",
-      width: 120,
-      headerAlign: "center",
-      align: "center",
+      headerName: "Actions",
+      width: 100,
       renderCell: (params) => (
         <UserActionMenu
           onEdit={() => onEditUser(params.row)}
@@ -400,67 +260,132 @@ export default function ListProjects() {
   return (
     <>
       <div>
-        <div
-          id="list-header"
-          className="flex justify-between items-center mb-8"
-        >
-          <h1 className="font-bold text-3xl text-gray-800">
-            {currentView === "projects"
-              ? "Danh sách dự án"
-              : "Danh sách người dùng"}
+        <div id="list-header" className="flex justify-between items-center ">
+          <h1 className="font-bold text-2xl">
+            {currentView === "projects" ? "Projects" : "Users"}
           </h1>
           {currentView === "projects" && <CreateProjectModal />}
         </div>
-        <div id="list-content">
-          <Paper
-            elevation={0}
-            sx={{
-              borderRadius: "12px",
-              overflow: "hidden",
-              backgroundColor: "transparent",
-            }}
-          >
-            <StyledDataGrid
-              rows={
-                currentView === "projects" ? filteredProjects : filteredUsers
-              }
-              columns={
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (currentView === "projects"
-                  ? projectColumns
-                  : userColumns) as any
-              }
-              initialState={{
-                pagination: {
-                  paginationModel: {
-                    pageSize: 10,
-                  },
-                },
-              }}
-              pageSizeOptions={[5, 10, 25]}
-              checkboxSelection
-              disableRowSelectionOnClick
-              getRowId={(row) =>
-                currentView === "projects"
-                  ? (row as ProjectList).id
-                  : (row as User).userId
-              }
-              sx={{
-                height: 600,
-                width: "100%",
-              }}
-              localeText={{
-                noRowsLabel:
+        <div id="list-content" className="mt-10">
+          {!isSmallScreen ? (
+            <Box sx={{ height: "100%", width: "100%" }}>
+              <DataGrid
+                rows={
+                  currentView === "projects" ? filteredProjects : filteredUsers
+                }
+                columns={
                   currentView === "projects"
-                    ? "Không có dữ liệu dự án"
-                    : "Không có dữ liệu người dùng",
-                footerRowSelected: (count) =>
-                  count !== 1
-                    ? `${count.toLocaleString()} hàng được chọn`
-                    : `${count.toLocaleString()} hàng được chọn`,
-              }}
-            />
-          </Paper>
+                    ? (projectColumns as unknown as GridColDef<
+                        User | ProjectList
+                      >[])
+                    : (userColumns as unknown as GridColDef<
+                        User | ProjectList
+                      >[])
+                }
+                initialState={{
+                  pagination: {
+                    paginationModel: {
+                      pageSize: 10,
+                    },
+                  },
+                }}
+                pageSizeOptions={[5, 10, 25]}
+                checkboxSelection
+                disableRowSelectionOnClick
+                getRowId={(row: ProjectList | User) =>
+                  currentView === "projects"
+                    ? (row as ProjectList).id
+                    : (row as User).userId
+                }
+              />
+            </Box>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {currentView === "projects"
+                ? pagedProjects.map((p) => (
+                    <div key={p.id} className="border rounded-md p-3">
+                      <div className="flex justify-between items-start gap-2">
+                        <button
+                          onClick={() => navigate(toProjectDetailUrl(p.id))}
+                          className="text-blue-600 font-semibold text-left"
+                        >
+                          {p.projectName}
+                        </button>
+                        <ActionMenu
+                          onUpdate={() => onUpdate(p.id)}
+                          onDelete={() => onDelete(p.id)}
+                        />
+                      </div>
+                      <div className="mt-2 text-sm text-gray-600">
+                        <div>
+                          <span className="font-medium">Category:</span>{" "}
+                          {p.categoryName}
+                        </div>
+                        <div>
+                          <span className="font-medium">Creator:</span>{" "}
+                          {(p.creator as ProjectCreator)?.name || "N/A"}
+                        </div>
+                        <div>
+                          <span className="font-medium">Alias:</span> {p.alias}
+                        </div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="font-medium">Members:</span>
+                          <AvatarGroup
+                            max={3}
+                            sx={{
+                              "& .MuiAvatar-root": {
+                                width: 24,
+                                height: 24,
+                                fontSize: 10,
+                              },
+                            }}
+                          >
+                            {((p.members as ProjectMember[]) || []).map(
+                              (m: ProjectMember, idx: number) => (
+                                <Avatar
+                                  key={idx}
+                                  alt={m?.name}
+                                  src={`${m?.avatar}rounded=true&background=random`}
+                                  sx={{ width: 28, height: 28 }}
+                                />
+                              )
+                            )}
+                          </AvatarGroup>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                : filteredUsers.map((u) => (
+                    <div key={u.userId} className="border rounded-md p-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar src={u.avatar} sx={{ width: 36, height: 36 }} />
+                        <div className="flex-1">
+                          <div className="font-semibold">{u.name}</div>
+                          <div className="text-sm text-gray-600">{u.email}</div>
+                          <div className="text-sm text-gray-600">
+                            {u.phoneNumber}
+                          </div>
+                        </div>
+                        <UserActionMenu
+                          onEdit={() => onEditUser(u)}
+                          onDelete={() => onDeleteUser(u.userId)}
+                        />
+                      </div>
+                    </div>
+                  ))}
+              {currentView === "projects" && (
+                <div className="flex justify-center py-2">
+                  <Pagination
+                    size="small"
+                    count={totalProjectPages}
+                    page={projectPage}
+                    onChange={(_e, page) => setProjectPage(page)}
+                    color="primary"
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
       {currentView === "projects" && (

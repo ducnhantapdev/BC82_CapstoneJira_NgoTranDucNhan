@@ -38,7 +38,6 @@ export default function ProjectDetail() {
     };
   }, [id, dispatch]);
 
-  // Debug: Log current project data
   useEffect(() => {
     if (currentProject) {
       console.log("Current project data:", currentProject);
@@ -51,7 +50,7 @@ export default function ProjectDetail() {
 
   return (
     <>
-      <div className="project-detais w-full">
+      <div className="project-detais w-full ">
         {/* Box */}
         <Box
           sx={{
@@ -61,7 +60,10 @@ export default function ProjectDetail() {
             height: BOARD_CONTENT_HEIGHT,
           }}
         >
-          <BoardHeader project={currentProject} onProjectUpdate={refreshProjectData} />
+          <BoardHeader
+            project={currentProject}
+            onProjectUpdate={refreshProjectData}
+          />
 
           <Box
             sx={{
@@ -71,8 +73,11 @@ export default function ProjectDetail() {
               alignItems: "flex-start",
             }}
           >
-            {/* Column 1*/}
-            <BoardMain project={currentProject} onProjectUpdate={refreshProjectData} />
+            {/* Columns */}
+            <BoardMain
+              project={currentProject}
+              onProjectUpdate={refreshProjectData}
+            />
           </Box>
         </Box>
       </div>
